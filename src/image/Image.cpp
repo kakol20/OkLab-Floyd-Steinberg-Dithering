@@ -49,7 +49,7 @@ Image::~Image() {
     stbi_image_free(m_data);
 }
 
-Image Image::operator=(const Image& other) {
+Image& Image::operator=(const Image& other) {
     if (&other == this) return *this;
 
     stbi_image_free(m_data);
@@ -136,6 +136,10 @@ bool Image::Write(const char* file) {
     Log::EndLine();
 
     return success != 0;
+}
+
+inline size_t Image::GetIndex(const int x, const int y) const {
+    return size_t((x + y * m_w) * m_channels);
 }
 
 void Image::Clear() {
