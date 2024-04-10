@@ -4,10 +4,12 @@
 #include "main.h"
 
 int main(int argc, char* argv[]) {
+    OkLab::Initialise();
+
     std::ifstream f("palettes.json");
 
     if (f) {
-        std::map<std::string, std::vector<sRGB>> palettes;
+        std::map<std::string, std::vector<OkLab>> palettes;
         json palettesJSON = json::parse(f);
 
         const auto& palettesStr = palettesJSON["palettes"];
@@ -22,9 +24,10 @@ int main(int argc, char* argv[]) {
             for (auto& colors : palettesStr[key]) {
                 const auto& hex = colors.get<std::string>();
                 const sRGB srgb = sRGB::HexTosRGB(hex);
-                palettes[key].push_back(srgb);
+                const OkLab lab = OkLab::sRGBtoOkLab(srgb);
+                palettes[key].push_back(lab);
 
-                Log::Write("  #" + hex + ": " + srgb.Output() + '\n');
+                Log::Write("  #" + hex + ", sRGB" + srgb.Output() + ", OkLab" + lab.Output() + '\n');
             }
         }
     }

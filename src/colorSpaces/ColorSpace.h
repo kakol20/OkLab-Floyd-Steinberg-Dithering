@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 class ColorSpace {
 public:
     ColorSpace(const double a = 0, const double b = 0, const double c = 0) {
