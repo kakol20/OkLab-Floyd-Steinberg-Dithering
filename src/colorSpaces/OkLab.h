@@ -42,6 +42,15 @@ public:
 
   static double Dist(const OkLab& lab1, const OkLab& lab2);
 
+  OkLab operator*(const double scalar) const;
+  OkLab& operator*=(const double scalar);
+
+  OkLab operator+(const OkLab& other) const;
+  OkLab& operator+=(const OkLab& other);
+
+  OkLab operator-(const OkLab& other) const;
+  OkLab& operator-=(const OkLab& other);
+
 private:
   static Matrix LinearRGBtoXYZ;
   static Matrix XYZtoLinearRGB;

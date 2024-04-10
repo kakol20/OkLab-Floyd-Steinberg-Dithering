@@ -90,3 +90,42 @@ double OkLab::SqrDist(const OkLab& lab1, const OkLab& lab2) {
 double OkLab::Dist(const OkLab& lab1, const OkLab& lab2) {
   return std::sqrt(OkLab::SqrDist(lab1, lab2));
 }
+
+OkLab OkLab::operator*(const double scalar) const {
+  OkLab out(*this);
+  out *= scalar;
+  return out;
+}
+
+OkLab& OkLab::operator*=(const double scalar) {
+  m_a *= scalar;
+  m_b *= scalar;
+  m_c *= scalar;
+  return *this;
+}
+
+OkLab OkLab::operator+(const OkLab& other) const {
+  OkLab out(*this);
+  out += other;
+  return out;
+}
+
+OkLab& OkLab::operator+=(const OkLab& other) {
+  m_a += other.m_a;
+  m_b += other.m_b;
+  m_c += other.m_c;
+  return *this;
+}
+
+OkLab OkLab::operator-(const OkLab& other) const {
+  OkLab out(*this);
+  out -= other;
+  return out;
+}
+
+OkLab& OkLab::operator-=(const OkLab& other) {
+  m_a -= other.m_a;
+  m_b -= other.m_b;
+  m_c -= other.m_c;
+  return *this;
+}
