@@ -1,4 +1,4 @@
-﻿# CMakeList.txt : CMake project for C++ CMake Template, include source and define
+﻿# CMakeList.txt : CMake project for OkLab Floyd-Steinberg Dithering, include source and define
 # project specific logic here.
 #
 cmake_minimum_required (VERSION 3.8)
@@ -9,16 +9,19 @@ if (POLICY CMP0141)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-project ("C++ CMake Template")
+project ("OkLab Floyd-Steinberg Dithering")
 
-# set(CPPTemplate "C++ CMake Template")
+# set(OkLabDithering "OkLab Floyd-Steinberg Dithering")
 
 # Add source to this project's executable.
-add_executable (CPPTemplate "src/main.h" 
-	"src/main.cpp")
+add_executable (OkLabDithering "src/main.h" 
+    "src/main.cpp"
+    "ext/json/json.hpp"
+    "ext/stb/stb_image.h"
+    "ext/stb/stb_image_write.h"
+    "src/image/Image.cpp"
+    "src/other/Log.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET CPPTemplate PROPERTY CXX_STANDARD 20)
+  set_property(TARGET OkLabDithering PROPERTY CXX_STANDARD 20)
 endif()
-
-# TODO: Add tests and install targets if needed.
