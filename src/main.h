@@ -7,6 +7,10 @@
 //#define USE_MAP
 
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <map>
+#include <vector>
 
 #include "../ext/json/json.hpp"
 using json = nlohmann::json;
