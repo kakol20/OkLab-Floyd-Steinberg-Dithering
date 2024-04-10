@@ -43,72 +43,65 @@ int main(int argc, char* argv[]) {
 
       const bool dithered = palettesJSON["dither"];
 
+      std::vector<OkLab> pixels;
+      pixels.reserve((size_t)copyImage.GetWidth() * (size_t)copyImage.GetHeight());
+
+      for (size_t i = 0; i < copyImage.GetSize(); i += 3) {
+        sRGB srgb(double(copyImage.GetData(i + 0)) / 255.,
+          double(copyImage.GetData(i + 1)) / 255.,
+          double(copyImage.GetData(i + 2)) / 255.);
+        pixels.push_back(OkLab::sRGBtoOkLab(srgb));
+      }
+
+      bool clampValue = true;
+
       for (int y = 0; y < copyImage.GetHeight(); y++) {
         for (int x = 0; x < copyImage.GetWidth(); x++) {
-          const size_t index = inputImage.GetIndex(x, y);
+          const size_t img_index = copyImage.GetIndex(x, y);
+          const size_t pixel_index = Image::GetIndex_s(x, y, copyImage.GetWidth(), 1);
 
-          const sRGB oldpixel(double(copyImage.GetData(index + 0)) / 255.,
-            double(copyImage.GetData(index + 1)) / 255.,
-            double(copyImage.GetData(index + 2)) / 255.);
+          const OkLab oldpixel = pixels[pixel_index];
 
-          const sRGB newPixel = ClosestPaletteColor(palettes[chosen.c_str()], oldpixel);
-          copyImage.SetData(index + 0, newPixel.GetRUInt());
-          copyImage.SetData(index + 1, newPixel.GetGUInt());
-          copyImage.SetData(index + 2, newPixel.GetBUInt());
+          const OkLab newPixel = ClosestPaletteColorLAB(palettes[chosen.c_str()], oldpixel);
+          const sRGB newPixel_rgb = OkLab::OkLabtosRGB(newPixel);
+          copyImage.SetData(img_index + 0, newPixel_rgb.GetRUInt());
+          copyImage.SetData(img_index + 1, newPixel_rgb.GetGUInt());
+          copyImage.SetData(img_index + 2, newPixel_rgb.GetBUInt());
 
           if (dithered) {
-            const sRGB quant_error = oldpixel - newPixel;
-
-            if (y + 1 < copyImage.GetHeight()) {
-              const size_t qe_5 = copyImage.GetIndex(x, y + 1);
-              sRGB new_5(double(copyImage.GetData(qe_5 + 0)) / 255.,
-                double(copyImage.GetData(qe_5 + 1)) / 255.,
-                double(copyImage.GetData(qe_5 + 2)) / 255.);
-              new_5 = new_5 + (quant_error * (5. / 16.));
-              new_5.Clamp();
-              copyImage.SetData(qe_5 + 0, new_5.GetRUInt());
-              copyImage.SetData(qe_5 + 1, new_5.GetGUInt());
-              copyImage.SetData(qe_5 + 2, new_5.GetBUInt());
-
-              if (x + 1 < copyImage.GetWidth()) {
-                const size_t qe_1 = copyImage.GetIndex(x + 1, y + 1);
-                sRGB new_1(double(copyImage.GetData(qe_1 + 0)) / 255.,
-                  double(copyImage.GetData(qe_1 + 1)) / 255.,
-                  double(copyImage.GetData(qe_1 + 2)) / 255.);
-                new_1 = new_1 + (quant_error * (1. / 16.));
-                new_1.Clamp();
-                copyImage.SetData(qe_1 + 0, new_1.GetRUInt());
-                copyImage.SetData(qe_1 + 1, new_1.GetGUInt());
-                copyImage.SetData(qe_1 + 2, new_1.GetBUInt());
-              }
-
-              if (x - 1 >= 0) {
-                const size_t qe_3 = copyImage.GetIndex(x - 1, y + 1);
-                sRGB new_3(double(copyImage.GetData(qe_3 + 0)) / 255.,
-                  double(copyImage.GetData(qe_3 + 1)) / 255.,
-                  double(copyImage.GetData(qe_3 + 2)) / 255.);
-                new_3 = new_3 + (quant_error * (3. / 16.));
-                new_3.Clamp();
-                copyImage.SetData(qe_3 + 0, new_3.GetRUInt());
-                copyImage.SetData(qe_3 + 1, new_3.GetGUInt());
-                copyImage.SetData(qe_3 + 2, new_3.GetBUInt());
-              }
-            }
+            const OkLab quant_error = oldpixel - newPixel;
 
             if (x + 1 < copyImage.GetWidth()) {
-              const size_t qe_7 = copyImage.GetIndex(x + 1, y);
-              sRGB new_7(double(copyImage.GetData(qe_7 + 0)) / 255.,
-                double(copyImage.GetData(qe_7 + 1)) / 255.,
-                double(copyImage.GetData(qe_7 + 2)) / 255.);
-              new_7 = new_7 + (quant_error * (7. / 16.));
-              new_7.Clamp();
-              copyImage.SetData(qe_7 + 0, new_7.GetRUInt());
-              copyImage.SetData(qe_7 + 1, new_7.GetGUInt());
-              copyImage.SetData(qe_7 + 2, new_7.GetBUInt());
+              const size_t qe_7 = Image::GetIndex_s(x + 1, y, copyImage.GetWidth(), 1);
+              pixels[qe_7] = pixels[qe_7] + quant_error * (7. / 16.);
+
+              if (clampValue) pixels[qe_7].RGBClamp();
+            }
+
+            if (y + 1 < copyImage.GetHeight()) {
+              if (x - 1 >= 0) {
+                const size_t qe_3 = Image::GetIndex_s(x - 1, y + 1, copyImage.GetWidth(), 1);
+                pixels[qe_3] = pixels[qe_3] + quant_error * (3. / 16.);
+
+                if (clampValue) pixels[qe_3].RGBClamp();
+              }
+
+              const size_t qe_5 = Image::GetIndex_s(x, y + 1, copyImage.GetWidth(), 1);
+              pixels[qe_5] = pixels[qe_5] + quant_error * (5. / 16.);
+
+              if (clampValue) pixels[qe_5].RGBClamp();
+
+              if (x + 1 < copyImage.GetWidth()) {
+                const size_t qe_1 = Image::GetIndex_s(x + 1, y + 1, copyImage.GetWidth(), 1);
+                pixels[qe_1] = pixels[qe_1] + quant_error * (1. / 16.);
+
+                if (clampValue) pixels[qe_1].RGBClamp();
+              }
             }
           }
         }
       }
+
       const std::string outputImageFile = palettesJSON["output_image"];
       copyImage.Write(outputImageFile.c_str());
     }
@@ -121,7 +114,7 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 
-sRGB ClosestPaletteColor(const std::vector<OkLab>& palette, const sRGB& col) {
+sRGB ClosestPaletteColorRGB(const std::vector<OkLab>& palette, const sRGB& col) {
   const OkLab col_lab = OkLab::sRGBtoOkLab(col);
   OkLab closest = palette[0];
   double closestDist = OkLab::SqrDist(col_lab, closest);
@@ -136,4 +129,19 @@ sRGB ClosestPaletteColor(const std::vector<OkLab>& palette, const sRGB& col) {
   }
 
   return OkLab::OkLabtosRGB(closest);
+}
+
+OkLab ClosestPaletteColorLAB(const std::vector<OkLab>& palette, const OkLab& lab) {
+  OkLab closest = palette[0];
+  double closestDist = OkLab::SqrDist(lab, closest);
+
+  for (size_t i = 1; i < palette.size(); i++) {
+    double dist = OkLab::SqrDist(lab, palette[i]);
+
+    if (dist < closestDist) {
+      closest = palette[i];
+      closestDist = dist;
+    }
+  }
+  return closest;
 }
