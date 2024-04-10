@@ -16,6 +16,8 @@
 using json = nlohmann::json;
 
 #include "other/Log.h"
-
+#include "maths/Matrix.h"
+#include "colorSpaces/ColorSpace.h"
+#include "colorSpaces/sRGB.h"
 
 #endif // !MAIN_H

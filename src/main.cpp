@@ -4,19 +4,10 @@
 #include "main.h"
 
 int main(int argc, char* argv[]) {
-    //std::cout << "Hello World\n";
-
-    /*Log::StartLine();
-    Log::Write("Hello World!");
-    Log::EndLine();
-
-    Log::Save();*/
-
     std::ifstream f("palettes.json");
 
-
     if (f) {
-        std::map<std::string, std::vector<std::string>> palettes;
+        std::map<std::string, std::vector<sRGB>> palettes;
         json palettesJSON = json::parse(f);
 
         const auto& palettesStr = palettesJSON["palettes"];
@@ -30,9 +21,10 @@ int main(int argc, char* argv[]) {
             Log::Write(key + '\n');
             for (auto& colors : palettesStr[key]) {
                 const auto& hex = colors.get<std::string>();
-                palettes[key].push_back(hex);
+                const sRGB srgb = sRGB::HexTosRGB(hex);
+                palettes[key].push_back(srgb);
 
-                Log::Write("  #" + hex + '\n');
+                Log::Write("  #" + hex + ": " + srgb.Output() + '\n');
             }
         }
     }

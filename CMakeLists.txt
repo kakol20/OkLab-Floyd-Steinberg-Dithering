@@ -20,7 +20,10 @@ add_executable (OkLabDithering "src/main.h"
     "ext/stb/stb_image.h"
     "ext/stb/stb_image_write.h"
     "src/image/Image.cpp"
-    "src/other/Log.cpp")
+    "src/other/Log.cpp"
+    "src/maths/Matrix.cpp" 
+    "src/colorSpaces/ColorSpace.h"
+    "src/colorSpaces/sRGB.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET OkLabDithering PROPERTY CXX_STANDARD 20)
