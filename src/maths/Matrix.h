@@ -67,6 +67,7 @@ public:
 
   void Pow(const double pow);
   void Cbrt();
+  void NRoot(const double n);
 
   inline double GetValue(const size_t col, const size_t row) const {
     return m_matrix[col][row];

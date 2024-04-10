@@ -242,3 +242,23 @@ void Matrix::Cbrt() {
     }
   }
 }
+
+void Matrix::NRoot(const double n) {
+  double exp = 1. / n;
+  for (size_t i = 0; i < m_cols; i++) {
+    for (size_t j = 0; j < m_rows; j++) {
+      if (std::fmod(n, 1.) == 0.) {
+        m_matrix[i][j] = std::pow(m_matrix[i][j], exp);
+      }
+      else {
+        double absroot = std::pow(std::abs(m_matrix[i][j]), exp);
+
+        if (m_matrix[i][j] < 0.) {
+          absroot *= -1;
+        }
+
+        m_matrix[i][j] = absroot;
+      }
+    }
+  }
+}

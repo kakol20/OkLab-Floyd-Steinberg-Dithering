@@ -64,7 +64,8 @@ sRGB OkLab::OkLabtosRGB(const OkLab& lab) {
   val = OkLab::XYZtoLinearRGB * val;
 
   // to sRGB
-  val.Pow(1. / 2.2);
+  //val.Pow(1. / 2.2);
+  val.NRoot(2.2);
 
   // clamping values
 
