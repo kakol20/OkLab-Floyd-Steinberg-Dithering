@@ -30,7 +30,7 @@ public:
 
     // ----- MULTIPLICATION -----
 
-    Matrix operator*(const Matrix& rhs);
+    Matrix operator*(const Matrix& rhs) const;
     Matrix& operator*=(const Matrix& rhs);
 
     Matrix& operator/=(const double scalar);
@@ -76,5 +76,4 @@ private:
     size_t m_cols, m_rows;
 
     Array2D<double> m_matrix;
-
 };

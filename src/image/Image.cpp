@@ -138,8 +138,13 @@ bool Image::Write(const char* file) {
     return success != 0;
 }
 
-inline size_t Image::GetIndex(const int x, const int y) const {
+size_t Image::GetIndex(const int x, const int y) const {
+    if (x < 0 || x >= m_w || y < 0 || y >= m_h) return NAN;
     return size_t((x + y * m_w) * m_channels);
+}
+
+size_t Image::GetIndex_s(const int x, const int y, const int width, const int channels) {
+    return size_t((x + y * width) * channels);
 }
 
 void Image::Clear() {

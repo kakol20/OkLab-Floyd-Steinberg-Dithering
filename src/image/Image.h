@@ -24,7 +24,9 @@ public:
     inline uint8_t GetData(const size_t index) const { return m_data[index]; };
     inline void SetData(const size_t index, const uint8_t data) { m_data[index] = data; };
 
-    inline size_t GetIndex(const int x, const int y) const;
+    size_t GetIndex(const int x, const int y) const;
+
+    static size_t GetIndex_s(const int x, const int y, const int width, const int channels);
 
     inline int GetWidth() const { return m_w; };
     inline int GetHeight() const { return m_h; };

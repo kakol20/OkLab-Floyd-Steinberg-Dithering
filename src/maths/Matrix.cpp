@@ -100,7 +100,7 @@ Matrix& Matrix::operator=(const Matrix& copy) {
     return *this;
 }
 
-Matrix Matrix::operator*(const Matrix& rhs) {
+Matrix Matrix::operator*(const Matrix& rhs) const {
     Matrix out(m_matrix);
     out *= rhs;
     return out;
@@ -172,7 +172,7 @@ bool Matrix::Cofactor3x3() {
             for (size_t j = 0; j < 3; j++) {
                 const size_t colMax = i <= 1 ? 2 : 1;
                 const size_t colMin = i >= 1 ? 0 : 1;
-                
+
                 const size_t rowMax = j <= 1 ? 2 : 1;
                 const size_t rowMin = j >= 1 ? 0 : 1;
 

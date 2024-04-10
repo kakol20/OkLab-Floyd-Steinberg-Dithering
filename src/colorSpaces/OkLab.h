@@ -32,6 +32,16 @@ public:
     /// <returns></returns>
     static sRGB OkLabtosRGB(const OkLab& lab);
 
+    /// <summary>
+    /// Find the square distance between two OkLabs
+    /// </summary>
+    /// <param name="lab1"></param>
+    /// <param name="lab2"></param>
+    /// <returns></returns>
+    static double SqrDist(const OkLab& lab1, const OkLab& lab2);
+
+    static double Dist(const OkLab& lab1, const OkLab& lab2);
+
 private:
     static Matrix LinearRGBtoXYZ;
     static Matrix XYZtoLinearRGB;

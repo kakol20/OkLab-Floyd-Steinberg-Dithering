@@ -78,3 +78,14 @@ sRGB OkLab::OkLabtosRGB(const OkLab& lab) {
 
     return sRGB(r, g, b);
 }
+
+double OkLab::SqrDist(const OkLab& lab1, const OkLab& lab2) {
+    const double l = lab1.m_a - lab2.m_a;
+    const double a = lab1.m_b - lab2.m_b;
+    const double b = lab1.m_c - lab2.m_c;
+    return (l * l) + (a * a) + (b * b);
+}
+
+double OkLab::Dist(const OkLab& lab1, const OkLab& lab2) {
+    return std::sqrt(OkLab::SqrDist(lab1, lab2));
+}

@@ -1,4 +1,6 @@
 {
+  "input_image": "data/suzanne.png",
+  "output_image": "data/output.png",
   "chosen_palette": "minecraft_concrete",
   "palettes": {
     "minecraft_concrete": [

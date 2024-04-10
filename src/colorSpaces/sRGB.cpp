@@ -19,3 +19,42 @@ void sRGB::Clamp() {
     m_b = m_b < 0 ? 0 : m_b;
     m_c = m_c < 0 ? 0 : m_c;
 }
+
+sRGB sRGB::operator*(const double scalar) const {
+    sRGB out(m_a, m_b, m_c);
+    out *= scalar;
+    return out;
+}
+
+sRGB& sRGB::operator*=(const double scalar) {
+    m_a *= scalar;
+    m_b *= scalar;
+    m_c *= scalar;
+    return *this;
+}
+
+sRGB sRGB::operator+(const sRGB& other) const {
+    sRGB out(m_a, m_b, m_c);
+    out += other;
+    return out;
+}
+
+sRGB& sRGB::operator+=(const sRGB& other) {
+    m_a += other.m_a;
+    m_b += other.m_b;
+    m_c += other.m_c;
+    return *this;
+}
+
+sRGB sRGB::operator-(const sRGB& other) const {
+    sRGB out(m_a, m_b, m_c);
+    out -= other;
+    return out;
+}
+
+sRGB& sRGB::operator-=(const sRGB& other) {
+    m_a -= other.m_a;
+    m_b -= other.m_b;
+    m_c -= other.m_c;
+    return *this;
+}
