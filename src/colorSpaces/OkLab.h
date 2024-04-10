@@ -51,6 +51,11 @@ public:
   OkLab operator-(const OkLab& other) const;
   OkLab& operator-=(const OkLab& other);
 
+  /// <summary>
+  /// Clamp based on its RGB value
+  /// </summary>
+  void RGBClamp();
+
 private:
   static Matrix LinearRGBtoXYZ;
   static Matrix XYZtoLinearRGB;

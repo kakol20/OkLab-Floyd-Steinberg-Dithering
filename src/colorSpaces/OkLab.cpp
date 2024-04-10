@@ -129,3 +129,15 @@ OkLab& OkLab::operator-=(const OkLab& other) {
   m_c -= other.m_c;
   return *this;
 }
+
+void OkLab::RGBClamp() {
+  OkLab lab(m_a, m_b, m_c);
+  sRGB rgb = OkLab::OkLabtosRGB(lab);
+  rgb.Clamp();
+
+  lab = OkLab::sRGBtoOkLab(rgb);
+
+  m_a = lab.m_a;
+  m_b = lab.m_b;
+  m_c = lab.m_c;
+}

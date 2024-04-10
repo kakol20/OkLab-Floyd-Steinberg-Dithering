@@ -23,6 +23,8 @@ using json = nlohmann::json;
 
 #include "image/Image.h"
 
-sRGB ClosestPaletteColor(const std::vector<OkLab>& palette, const sRGB& col);
+sRGB ClosestPaletteColorRGB(const std::vector<OkLab>& palette, const sRGB& col);
+
+OkLab ClosestPaletteColorLAB(const std::vector<OkLab>& palette, const OkLab& lab);
 
 #endif // !MAIN_H
