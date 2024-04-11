@@ -6,111 +6,98 @@
 int main(int argc, char* argv[]) {
   OkLab::Initialise();
 
-  std::ifstream f("palettes.json");
+  std::ifstream f("settings.json");
 
   if (f) {
-    std::map<std::string, std::vector<OkLab>> palettes;
-    json palettesJSON = json::parse(f);
+    json settings_json = json::parse(f);
 
-    const auto& palettesStr = palettesJSON["palettes"];
+    const bool dither = settings_json["dither"];
     Log::StartLine();
-    Log::Write("Chosen Palette: ");
-    const std::string chosen = palettesJSON["chosen_palette"];
-    Log::Write(chosen);
-    Log::EndLine();
+    Log::Write("Dither: ");
+    Log::Write(dither ? "TRUE\n" : "FALSE\n");
 
-    for (auto& [key, val] : palettesStr.items()) {
+    // Get colours from palette file
+
+    std::vector<OkLab> colours;
+    std::fstream paletteFile;
+    std::string paletteFileLoc = settings_json["palette"];
+
+    paletteFile.open(paletteFileLoc);
+
+    if (paletteFile) {
       Log::StartLine();
-      Log::Write(key + '\n');
-      for (auto& colors : palettesStr[key]) {
-        const auto& hex = colors.get<std::string>();
-        const sRGB srgb = sRGB::HexTosRGB(hex);
-        const OkLab lab = OkLab::sRGBtoOkLab(srgb);
-        palettes[key].push_back(lab);
 
-        Log::Write("  #" + hex + ", sRGB" + srgb.Output() + ", OkLab" + lab.Output() + '\n');
+      Log::Write(paletteFileLoc + '\n');
+
+      std::string line;
+      while (std::getline(paletteFile, line)) {
+        sRGB srgb = sRGB::HexTosRGB(line);
+        OkLab lab = OkLab::sRGBtoOkLab(srgb);
+
+        Log::Write("  #" + line + ", sRGB" + srgb.Output() + ", OkLab" + lab.Output() + '\n');
+
+        colours.push_back(lab);
       }
-    }
-    Log::EndLine();
 
-    // Load Image
+      std::string imageFileLoc = settings_json["input_image"];
+      const Image originalImage(imageFileLoc.c_str(), 3);
+      Image copyImage = originalImage;
 
-    Image inputImage;
-    const std::string imageFile = palettesJSON["input_image"];
-
-    if (inputImage.Read(imageFile.c_str(), 3)) {
-      Image copyImage(inputImage);
-
-      const bool dithered = palettesJSON["dither"];
+      // Replicate image into array of OkLab
 
       std::vector<OkLab> pixels;
-      pixels.reserve((size_t)copyImage.GetWidth() * (size_t)copyImage.GetHeight());
+      const size_t pixels_size = (size_t)originalImage.GetWidth() * (size_t)originalImage.GetHeight();
+      pixels.reserve(pixels_size);
 
-      for (size_t i = 0; i < copyImage.GetSize(); i += 3) {
-        sRGB srgb(double(copyImage.GetData(i + 0)) / 255.,
-          double(copyImage.GetData(i + 1)) / 255.,
-          double(copyImage.GetData(i + 2)) / 255.);
+      Log::StartLine();
+      Log::Write("Processing Pixels");
+      auto start = std::chrono::high_resolution_clock::now();
+
+      for (size_t i = 0; i < originalImage.GetSize(); i += 3) {
+        sRGB srgb(sRGB::UInt8toDouble(originalImage.GetData(i + 0)),
+          sRGB::UInt8toDouble(originalImage.GetData(i + 1)),
+          sRGB::UInt8toDouble(originalImage.GetData(i + 2)));
+
         pixels.push_back(OkLab::sRGBtoOkLab(srgb));
-      }
 
-      bool clampValue = true;
+        auto stop = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+        if (duration.count() >= 5000) {
+          double progress = double(i) / double(originalImage.GetSize());
+          progress *= 100.;
 
-      for (int y = 0; y < copyImage.GetHeight(); y++) {
-        for (int x = 0; x < copyImage.GetWidth(); x++) {
-          const size_t img_index = copyImage.GetIndex(x, y);
-          const size_t pixel_index = Image::GetIndex_s(x, y, copyImage.GetWidth(), 1);
+          Log::EndLine();
+          Log::StartLine();
+          Log::Write("  ");
+          Log::Write(std::to_string(progress));
+          Log::Write("%");
 
-          const OkLab oldpixel = pixels[pixel_index];
-
-          const OkLab newPixel = ClosestPaletteColorLAB(palettes[chosen.c_str()], oldpixel);
-          const sRGB newPixel_rgb = OkLab::OkLabtosRGB(newPixel);
-          copyImage.SetData(img_index + 0, newPixel_rgb.GetRUInt());
-          copyImage.SetData(img_index + 1, newPixel_rgb.GetGUInt());
-          copyImage.SetData(img_index + 2, newPixel_rgb.GetBUInt());
-
-          if (dithered) {
-            const OkLab quant_error = oldpixel - newPixel;
-
-            if (x + 1 < copyImage.GetWidth()) {
-              const size_t qe_7 = Image::GetIndex_s(x + 1, y, copyImage.GetWidth(), 1);
-              pixels[qe_7] = pixels[qe_7] + quant_error * (7. / 16.);
-
-              if (clampValue) pixels[qe_7].RGBClamp();
-            }
-
-            if (y + 1 < copyImage.GetHeight()) {
-              if (x - 1 >= 0) {
-                const size_t qe_3 = Image::GetIndex_s(x - 1, y + 1, copyImage.GetWidth(), 1);
-                pixels[qe_3] = pixels[qe_3] + quant_error * (3. / 16.);
-
-                if (clampValue) pixels[qe_3].RGBClamp();
-              }
-
-              const size_t qe_5 = Image::GetIndex_s(x, y + 1, copyImage.GetWidth(), 1);
-              pixels[qe_5] = pixels[qe_5] + quant_error * (5. / 16.);
-
-              if (clampValue) pixels[qe_5].RGBClamp();
-
-              if (x + 1 < copyImage.GetWidth()) {
-                const size_t qe_1 = Image::GetIndex_s(x + 1, y + 1, copyImage.GetWidth(), 1);
-                pixels[qe_1] = pixels[qe_1] + quant_error * (1. / 16.);
-
-                if (clampValue) pixels[qe_1].RGBClamp();
-              }
-            }
-          }
+          start = std::chrono::high_resolution_clock::now();
         }
       }
+      Log::EndLine();
+      Log::StartLine();
+      Log::Write("Done\n");
 
-      const std::string outputImageFile = palettesJSON["output_image"];
-      copyImage.Write(outputImageFile.c_str());
+      // ----- MAIN DITHER -----
     }
+    else {
+      Log::StartLine();
+      Log::Write("Failed to read: ");
+      Log::Write(paletteFileLoc);
+      Log::EndLine();
+    }
+  }
+  else {
+    Log::StartLine();
+    Log::Write("Failed to read: settings.json");
+    Log::EndLine();
   }
 
   Log::Save();
 
-  std::cout << "Press enter to exit...\n";
-  std::cin.ignore();
+  //std::cout << "\nPress enter to exit...\n";
+  //std::cin.ignore();
   return 0;
 }
 
