@@ -20,6 +20,8 @@ public:
   inline uint8_t GetGUInt() const { return uint8_t(std::round(m_b * 255.)); };
   inline uint8_t GetBUInt() const { return uint8_t(std::round(m_c * 255.)); };
 
+  std::string GetHex() const;
+
   static double UInt8toDouble(const uint8_t v) { return double(v) / 255.; };
 
   void Clamp();

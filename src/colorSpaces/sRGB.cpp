@@ -1,3 +1,6 @@
+#include <sstream>
+#include <iomanip>
+
 #include "sRGB.h"
 
 sRGB sRGB::HexTosRGB(const std::string hex) {
@@ -8,6 +11,19 @@ sRGB sRGB::HexTosRGB(const std::string hex) {
   const unsigned int bMask = 0x0000FF;
 
   return sRGB(double((hexInt & rMask) >> 16) / 255., double((hexInt & gMask) >> 8) / 255., double(hexInt & bMask) / 255.);
+}
+
+std::string sRGB::GetHex() const {
+  std::stringstream out;
+
+  uint8_t r = GetRUInt();
+  uint8_t g = GetGUInt();
+  uint8_t b = GetBUInt();
+  unsigned int hex_i = (r << 16) | (g << 8) | b;
+
+  out << std::setfill('0') << std::uppercase << std::setw(6) << std::hex << hex_i;
+
+  return out.str();
 }
 
 void sRGB::Clamp() {
