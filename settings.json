@@ -1,0 +1,6 @@
+{
+  "input_image": "data/rubik.png",
+  "output_image": "data/rubik_out.png",
+  "palette": "data/minecraft_wool.palette",
+  "dither": true
+}
