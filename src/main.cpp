@@ -80,6 +80,80 @@ int main(int argc, char* argv[]) {
       Log::Write("Done\n");
 
       // ----- MAIN DITHER -----
+
+      const bool clampValue = true;
+
+      Log::StartLine();
+      Log::Write("Dithering");
+      start = std::chrono::high_resolution_clock::now();
+      for (int y = 0; y < copyImage.GetHeight(); y++) {
+        for (int x = 0; x < copyImage.GetWidth(); x++) {
+          const size_t img_index = copyImage.GetIndex(x, y);
+          const size_t pixel_index = Image::GetIndex_s(x, y, copyImage.GetWidth(), 1);
+
+          const OkLab oldpixel = pixels[pixel_index];
+
+          const OkLab newpixel = ClosestPaletteColorLAB(colours, oldpixel);
+          const sRGB newpixel_rgb = OkLab::OkLabtosRGB(newpixel);
+
+          copyImage.SetData(img_index + 0, newpixel_rgb.GetRUInt());
+          copyImage.SetData(img_index + 1, newpixel_rgb.GetGUInt());
+          copyImage.SetData(img_index + 2, newpixel_rgb.GetBUInt());
+
+          if (dither) {
+            const OkLab quant_error = oldpixel - newpixel;
+
+            if (x + 1 < copyImage.GetWidth()) {
+              const size_t qe_7 = Image::GetIndex_s(x + 1, y, copyImage.GetWidth(), 1);
+              pixels[qe_7] = pixels[qe_7] + quant_error * (7. / 16.);
+
+              if (clampValue) pixels[qe_7].RGBClamp();
+            }
+
+            if (y + 1 < copyImage.GetHeight()) {
+              if (x - 1 >= 0) {
+                const size_t qe_3 = Image::GetIndex_s(x - 1, y + 1, copyImage.GetWidth(), 1);
+                pixels[qe_3] = pixels[qe_3] + quant_error * (3. / 16.);
+
+                if (clampValue) pixels[qe_3].RGBClamp();
+              }
+
+              const size_t qe_5 = Image::GetIndex_s(x, y + 1, copyImage.GetWidth(), 1);
+              pixels[qe_5] = pixels[qe_5] + quant_error * (5. / 16.);
+
+              if (clampValue) pixels[qe_5].RGBClamp();
+
+              if (x + 1 < copyImage.GetWidth()) {
+                const size_t qe_1 = Image::GetIndex_s(x + 1, y + 1, copyImage.GetWidth(), 1);
+                pixels[qe_1] = pixels[qe_1] + quant_error * (1. / 16.);
+
+                if (clampValue) pixels[qe_1].RGBClamp();
+              }
+            }
+          }
+
+          auto stop = std::chrono::high_resolution_clock::now();
+          auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+          if (duration.count() >= 5000) {
+            double progress = double(img_index) / double(copyImage.GetSize());
+            progress *= 100.;
+
+            Log::EndLine();
+            Log::StartLine();
+            Log::Write("  ");
+            Log::Write(std::to_string(progress));
+            Log::Write("%");
+
+            start = std::chrono::high_resolution_clock::now();
+          }
+        }
+      }
+      Log::EndLine();
+      Log::StartLine();
+      Log::Write("Done\n");
+
+      std::string output = settings_json["output_image"];
+      copyImage.Write(output.c_str());
     }
     else {
       Log::StartLine();

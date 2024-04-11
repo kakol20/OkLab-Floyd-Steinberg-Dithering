@@ -1,6 +1,0 @@
-{
-  "input_image": "data/suzanne.png",
-  "output_image": "data/suzanne_out.png",
-  "chosen_palette": "data/gameboy_original.palette",
-  "dither": true
-}
