@@ -94,7 +94,8 @@ int main(int argc, char* argv[]) {
           const OkLab oldpixel = pixels[pixel_index];
 
           const OkLab newpixel = ClosestPaletteColorLAB(colours, oldpixel);
-          const sRGB newpixel_rgb = OkLab::OkLabtosRGB(newpixel);
+          sRGB newpixel_rgb = OkLab::OkLabtosRGB(newpixel);
+          newpixel_rgb.Clamp();
 
           copyImage.SetData(img_index + 0, newpixel_rgb.GetRUInt());
           copyImage.SetData(img_index + 1, newpixel_rgb.GetGUInt());

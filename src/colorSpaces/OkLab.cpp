@@ -69,13 +69,17 @@ sRGB OkLab::OkLabtosRGB(const OkLab& lab) {
 
   // clamping values
 
-  double r = val.GetValue(0, 0) > 1. ? 1. : val.GetValue(0, 0);
-  double g = val.GetValue(0, 1) > 1. ? 1. : val.GetValue(0, 1);
-  double b = val.GetValue(0, 2) > 1. ? 1. : val.GetValue(0, 2);
+  // double r = val.GetValue(0, 0) > 1. ? 1. : val.GetValue(0, 0);
+  // double g = val.GetValue(0, 1) > 1. ? 1. : val.GetValue(0, 1);
+  // double b = val.GetValue(0, 2) > 1. ? 1. : val.GetValue(0, 2);
 
-  r = r < 0 ? 0 : r;
-  g = g < 0 ? 0 : g;
-  b = b < 0 ? 0 : b;
+  // r = r < 0 ? 0 : r;
+  // g = g < 0 ? 0 : g;
+  // b = b < 0 ? 0 : b;
+
+  double r = val.GetValue(0, 0);
+  double g = val.GetValue(0, 1);
+  double b = val.GetValue(0, 2);
 
   return sRGB(r, g, b);
 }
