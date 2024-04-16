@@ -145,3 +145,9 @@ void OkLab::RGBClamp() {
   m_b = lab.m_b;
   m_c = lab.m_c;
 }
+
+bool OkLab::IsGrayscale(const double threshold) const {
+  const double t = threshold * threshold;
+  const OkLab gray(m_a, 0., 0.);
+  return OkLab::SqrDist(gray, *this) <= t;
+}
