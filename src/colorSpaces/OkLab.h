@@ -58,6 +58,8 @@ public:
 
   bool IsGrayscale(const double threshold) const;
 
+  inline void ConvertToGrayscale() { m_b = 0., m_c = 0.; };
+
 private:
   static Matrix LinearRGBtoXYZ;
   static Matrix XYZtoLinearRGB;

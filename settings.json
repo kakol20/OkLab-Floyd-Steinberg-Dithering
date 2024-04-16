@@ -1,6 +1,8 @@
 {
-  "input_image": "data/rubik.png",
-  "output_image": "data/rubik_grayscale_out.png",
+  "input_image": "data/suzanne.png",
+  "output_image": "data/suzanne_grayscale_out.png",
   "palette": "data/minecraft_map_grayscale_staircase.palette",
-  "dither": true
+  "dither": true,
+  "convert_grayscale": true,
+  "save_grayscale": true
 }

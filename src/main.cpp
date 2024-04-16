@@ -21,6 +21,7 @@ int main(int argc, char* argv[]) {
     std::vector<OkLab> colours;
     std::fstream paletteFile;
     std::string paletteFileLoc = settings_json["palette"];
+    const bool convertGray = settings_json["convert_grayscale"];
 
     paletteFile.open(paletteFileLoc);
 
@@ -40,7 +41,34 @@ int main(int argc, char* argv[]) {
       }
 
       std::string imageFileLoc = settings_json["input_image"];
-      const Image originalImage(imageFileLoc.c_str(), 3);
+      Image originalImage(imageFileLoc.c_str(), 3);
+
+      if (convertGray) {
+        // Convert image to grayscale first
+        const bool saveGray = settings_json["save_grayscale"];
+        for (int x = 0; x < originalImage.GetWidth(); x++) {
+          for (int y = 0; y < originalImage.GetHeight(); y++) {
+            const size_t index = originalImage.GetIndex(x, y);
+
+            sRGB rgb(sRGB::UInt8toDouble(originalImage.GetData(index + 0)),
+              sRGB::UInt8toDouble(originalImage.GetData(index + 1)),
+              sRGB::UInt8toDouble(originalImage.GetData(index + 2)));
+            OkLab lab = OkLab::sRGBtoOkLab(rgb);
+            lab.ConvertToGrayscale();
+
+            rgb = OkLab::OkLabtosRGB(lab);
+
+            originalImage.SetData(index + 0, rgb.GetRUInt());
+            originalImage.SetData(index + 1, rgb.GetGUInt());
+            originalImage.SetData(index + 2, rgb.GetBUInt());
+          }
+        }
+
+        if (saveGray) {
+          originalImage.Write("data/grayscale.png");
+        }
+      }
+
       Image copyImage = originalImage;
 
       // Replicate image into array of OkLab
