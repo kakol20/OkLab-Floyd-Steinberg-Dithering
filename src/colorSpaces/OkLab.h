@@ -56,6 +56,8 @@ public:
   /// </summary>
   void RGBClamp();
 
+  bool IsGrayscale(const double threshold) const;
+
 private:
   static Matrix LinearRGBtoXYZ;
   static Matrix XYZtoLinearRGB;

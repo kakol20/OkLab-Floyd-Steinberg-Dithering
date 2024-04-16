@@ -145,3 +145,14 @@ void OkLab::RGBClamp() {
   m_b = lab.m_b;
   m_c = lab.m_c;
 }
+
+/// <summary>
+/// Checks if colour is grayscale
+/// </summary>
+/// <param name="threshold">Uses OkLab colour space so small number may be required such as 0.01</param>
+/// <returns></returns>
+bool OkLab::IsGrayscale(const double threshold) const {
+  const double t = threshold * threshold;
+  const OkLab gray(m_a, 0., 0.);
+  return OkLab::SqrDist(gray, *this) <= t;
+}
