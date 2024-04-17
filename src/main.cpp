@@ -12,16 +12,26 @@ int main(int argc, char* argv[]) {
     json settings_json = json::parse(f);
 
     const bool dither = settings_json["dither"];
+    const bool saveGray = settings_json["save_grayscale"];
+    const bool convertGray = settings_json["convert_grayscale"];
     Log::StartLine();
     Log::Write("Dither: ");
     Log::Write(dither ? "TRUE\n" : "FALSE\n");
+
+    Log::StartLine();
+    Log::Write("Convert To Grayscale: ");
+    Log::Write(convertGray ? "TRUE\n" : "FALSE\n");
+
+    Log::StartLine();
+    Log::Write("Save Grayscale Image: ");
+    Log::Write(saveGray ? "TRUE\n" : "FALSE\n");
 
     // Get colours from palette file
 
     std::vector<OkLab> colours;
     std::fstream paletteFile;
     std::string paletteFileLoc = settings_json["palette"];
-    const bool convertGray = settings_json["convert_grayscale"];
+    
 
     paletteFile.open(paletteFileLoc);
 
@@ -45,9 +55,11 @@ int main(int argc, char* argv[]) {
 
       if (convertGray) {
         // Convert image to grayscale first
-        const bool saveGray = settings_json["save_grayscale"];
-        for (int x = 0; x < originalImage.GetWidth(); x++) {
-          for (int y = 0; y < originalImage.GetHeight(); y++) {
+        Log::StartLine();
+        Log::Write("Converting to Grayscale");
+        auto start = std::chrono::high_resolution_clock::now();
+        for (int y = 0; y < originalImage.GetHeight(); y++) {
+          for (int x = 0; x < originalImage.GetWidth(); x++) {
             const size_t index = originalImage.GetIndex(x, y);
 
             sRGB rgb(sRGB::UInt8toDouble(originalImage.GetData(index + 0)),
@@ -61,8 +73,26 @@ int main(int argc, char* argv[]) {
             originalImage.SetData(index + 0, rgb.GetRUInt());
             originalImage.SetData(index + 1, rgb.GetGUInt());
             originalImage.SetData(index + 2, rgb.GetBUInt());
+
+            auto stop = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+            if (duration.count() >= 5000) {
+              double progress = double(index) / double(originalImage.GetSize());
+              progress *= 100.;
+
+              Log::EndLine();
+              Log::StartLine();
+              Log::Write("  ");
+              Log::Write(std::to_string(progress));
+              Log::Write("%");
+
+              start = std::chrono::high_resolution_clock::now();
+            }
           }
         }
+        Log::EndLine();
+        Log::StartLine();
+        Log::Write("Done\n");
 
         if (saveGray) {
           originalImage.Write("data/grayscale.png");
