@@ -69,4 +69,7 @@ private:
 
   static Matrix LMStoLab;
   static Matrix LabtoLMS;
+
+  static Matrix LinearRGBtoLinearLMS;
+  static Matrix LinearLMStoLinearRGB;
 };

@@ -24,7 +24,8 @@ add_executable (OkLabDithering "src/main.h"
     "src/maths/Matrix.cpp" 
     "src/colorSpaces/ColorSpace.h"
     "src/colorSpaces/sRGB.cpp"
-    "src/colorSpaces/OkLab.cpp")
+    "src/colorSpaces/OkLab.cpp"
+    "src/other/Pseudo2DArray.hpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET OkLabDithering PROPERTY CXX_STANDARD 20)

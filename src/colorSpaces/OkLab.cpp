@@ -1,43 +1,52 @@
 #include "OkLab.h"
 
 Matrix OkLab::LinearRGBtoXYZ({
-    {0.4124564, 0.2126729, 0.0193339},
-    {0.3575761, 0.7151522, 0.1191920},
-    {0.1804375, 0.0721750, 0.9503041}
-  });
+  0.4124564, 0.3575761, 0.1804375,
+  0.2126729, 0.7151522, 0.0721750,
+  0.0193339, 0.1191920, 0.9503041 }, 3, 3);
+
 Matrix OkLab::XYZtoLinearRGB(OkLab::LinearRGBtoXYZ);
 
 Matrix OkLab::XYZtoLinearLMS({
-    { 0.8189330101, 0.0329845436, 0.0482003018 },
-    { 0.3618667424, 0.9293118715, 0.2643662691 },
-    { -0.1288597137, 0.0361456387, 0.6338517070 }
-  });
+  0.8189330101, 0.3618667424, -0.1288597137,
+  0.0329845436, 0.9293118715, 0.0361456387,
+  0.0482003018, 0.2643662691, 0.6338517070 }, 3, 3);
+
 Matrix OkLab::LinearLMStoXYZ(OkLab::XYZtoLinearLMS);
 
 Matrix OkLab::LMStoLab({
-    { 0.2104542553, 1.9779984951, 0.0259040371 },
-    { 0.7936177850, -2.4285922050, 0.7827717662 },
-    { -0.0040720468, 0.4505937099, -0.8086757660 }
-  });
+  0.2104542553, 0.7936177850, -0.0040720468,
+  1.9779984951, -2.4285922050, 0.4505937099,
+  0.0259040371, 0.7827717662, -0.8086757660 }, 3, 3);
 Matrix OkLab::LabtoLMS(OkLab::LMStoLab);
 
+Matrix OkLab::LinearRGBtoLinearLMS(OkLab::XYZtoLinearLMS);
+Matrix OkLab::LinearLMStoLinearRGB(OkLab::LinearRGBtoLinearLMS);
+
 void OkLab::Initialise() {
+  OkLab::LinearRGBtoLinearLMS = OkLab::LinearRGBtoXYZ * OkLab::XYZtoLinearLMS;
+  OkLab::LinearLMStoLinearRGB = OkLab::LinearRGBtoLinearLMS;
+  OkLab::LinearLMStoLinearRGB.Invert3x3();
+
   OkLab::XYZtoLinearRGB.Invert3x3();
   OkLab::LinearLMStoXYZ.Invert3x3();
   OkLab::LabtoLMS.Invert3x3();
 }
 
 OkLab OkLab::sRGBtoOkLab(const sRGB& srgb) {
-  Matrix val({ {srgb.GetR(), srgb.GetG(), srgb.GetB()} });
+  Matrix val({ srgb.GetR(), srgb.GetG(), srgb.GetB() }, 1, 3);
 
   // to Linear RGB
   val.Pow(2.2);
 
   // to CIE XYZ
-  val = OkLab::LinearRGBtoXYZ * val;
+  //val = OkLab::LinearRGBtoXYZ * val;
 
   // to Linear LMS
-  val = OkLab::XYZtoLinearLMS * val;
+  //val = OkLab::XYZtoLinearLMS * val;
+
+  // to Linear LMS
+  val = OkLab::LinearRGBtoLinearLMS * val;
 
   // to LMS
   val.Cbrt();
@@ -45,11 +54,11 @@ OkLab OkLab::sRGBtoOkLab(const sRGB& srgb) {
   // to OkLab
   val = OkLab::LMStoLab * val;
 
-  return OkLab(val.GetValue(0, 0), val.GetValue(0, 1), val.GetValue(0, 2));
+  return OkLab(val(0, 0), val(0, 1), val(0, 2));
 }
 
 sRGB OkLab::OkLabtosRGB(const OkLab& lab) {
-  Matrix val({ {lab.GetL(), lab.GetA(), lab.GetB()} });
+  Matrix val({ lab.GetL(), lab.GetA(), lab.GetB() }, 1, 3);
 
   // to LMS
   val = OkLab::LabtoLMS * val;
@@ -58,10 +67,13 @@ sRGB OkLab::OkLabtosRGB(const OkLab& lab) {
   val.Pow(3.);
 
   // to CIE XYZ
-  val = OkLab::LinearLMStoXYZ * val;
+  //val = OkLab::LinearLMStoXYZ * val;
 
   // to Linear RGB
-  val = OkLab::XYZtoLinearRGB * val;
+  //val = OkLab::XYZtoLinearRGB * val;
+
+  // to Linear RGB
+  val = OkLab::LinearLMStoLinearRGB * val;
 
   // to sRGB
   //val.Pow(1. / 2.2);
@@ -77,9 +89,9 @@ sRGB OkLab::OkLabtosRGB(const OkLab& lab) {
   // g = g < 0 ? 0 : g;
   // b = b < 0 ? 0 : b;
 
-  double r = val.GetValue(0, 0);
-  double g = val.GetValue(0, 1);
-  double b = val.GetValue(0, 2);
+  double r = val(0, 0);
+  double g = val(0, 1);
+  double b = val(0, 2);
 
   return sRGB(r, g, b);
 }
