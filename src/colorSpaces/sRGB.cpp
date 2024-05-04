@@ -13,6 +13,24 @@ sRGB sRGB::HexTosRGB(const std::string hex) {
   return sRGB(double((hexInt & rMask) >> 16) / 255., double((hexInt & gMask) >> 8) / 255., double(hexInt & bMask) / 255.);
 }
 
+uint8_t sRGB::GetRUInt() const {
+  int o = (int)std::round(m_a * 255.);
+  o = o > 255 ? 255 : o;
+  return uint8_t(o < 0 ? 0 : o);
+}
+
+uint8_t sRGB::GetGUInt() const {
+  int o = (int)std::round(m_b * 255.);
+  o = o > 255 ? 255 : o;
+  return uint8_t(o < 0 ? 0 : o);
+}
+
+uint8_t sRGB::GetBUInt() const {
+  int o = (int)std::round(m_c * 255.);
+  o = o > 255 ? 255 : o;
+  return uint8_t(o < 0 ? 0 : o);
+}
+
 std::string sRGB::GetHex() const {
   std::stringstream out;
 

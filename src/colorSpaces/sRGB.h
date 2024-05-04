@@ -16,9 +16,13 @@ public:
   inline double GetG() const { return m_b; }
   inline double GetB() const { return m_c; }
 
-  inline uint8_t GetRUInt() const { return uint8_t(std::round(m_a * 255.)); };
-  inline uint8_t GetGUInt() const { return uint8_t(std::round(m_b * 255.)); };
-  inline uint8_t GetBUInt() const { return uint8_t(std::round(m_c * 255.)); };
+  //inline uint8_t GetRUInt() const { return uint8_t(std::round(m_a * 255.)); };
+  //inline uint8_t GetGUInt() const { return uint8_t(std::round(m_b * 255.)); };
+  //inline uint8_t GetBUInt() const { return uint8_t(std::round(m_c * 255.)); };
+
+  uint8_t GetRUInt() const;
+  uint8_t GetGUInt() const;
+  uint8_t GetBUInt() const;
 
   std::string GetHex() const;
 
