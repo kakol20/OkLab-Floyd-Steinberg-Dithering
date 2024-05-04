@@ -24,7 +24,7 @@ Matrix OkLab::LinearRGBtoLinearLMS(OkLab::XYZtoLinearLMS);
 Matrix OkLab::LinearLMStoLinearRGB(OkLab::LinearRGBtoLinearLMS);
 
 void OkLab::Initialise() {
-  OkLab::LinearRGBtoLinearLMS = OkLab::LinearRGBtoXYZ * OkLab::XYZtoLinearLMS;
+  OkLab::LinearRGBtoLinearLMS = OkLab::XYZtoLinearLMS * OkLab::LinearRGBtoXYZ;
   OkLab::LinearLMStoLinearRGB = OkLab::LinearRGBtoLinearLMS;
   OkLab::LinearLMStoLinearRGB.Invert3x3();
 
