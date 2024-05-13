@@ -168,3 +168,20 @@ bool OkLab::IsGrayscale(const double threshold) const {
   const OkLab gray(m_a, 0., 0.);
   return OkLab::SqrDist(gray, *this) <= t;
 }
+
+std::string OkLab::DebugsRGBtoOkLabMats() {
+  std::string out = "Linear RGB to Linear LMS\n";
+  out += OkLab::LinearRGBtoLinearLMS.Debug(2);
+  out += "LMS to OkLab\n";
+  out += OkLab::LMStoLab.Debug(2);
+
+  return out;
+}
+
+std::string OkLab::DebugOkLabtosRGBMats() {
+  std::string out = "OkLab to LMS\n";
+  out += OkLab::LabtoLMS.Debug(2);
+  out += "Linear LMS to Linear RGB\n";
+  out += OkLab::LinearLMStoLinearRGB.Debug(2);
+  return out;
+}

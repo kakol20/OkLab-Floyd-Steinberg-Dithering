@@ -32,7 +32,7 @@ public:
   bool Cofactor3x3();
   bool Invert3x3();
 
-  std::string Debug() const { return m_mat.Debug(); };
+  std::string Debug(const int indentSize = 0) const { return m_mat.Debug(indentSize); };
 
 private:
   Pseudo2DArray<double> m_mat;

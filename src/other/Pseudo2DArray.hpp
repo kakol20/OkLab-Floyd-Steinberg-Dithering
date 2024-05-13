@@ -19,7 +19,7 @@ public:
   unsigned int GetWidth() const { return m_width; };
   unsigned int GetHeight() const { return m_height; };
 
-  std::string Debug() const;
+  std::string Debug(const int indentSize = 0) const;
 
 private:
   //T* m_arr;
@@ -87,9 +87,13 @@ inline T Pseudo2DArray<T>::operator()(const unsigned int x, const unsigned int y
 }
 
 template<class T>
-inline std::string Pseudo2DArray<T>::Debug() const {
+inline std::string Pseudo2DArray<T>::Debug(const int indentSize) const {
   std::string out = "";
   for (unsigned int y = 0; y < m_height; y++) {
+    for (int s = 0; s < indentSize; s++) {
+      out += ' ';
+    }
+
     for (unsigned int x = 0; x < m_width; x++) {
       out += std::to_string(m_arr[GetIndex(x, y)]) + " ";
     }

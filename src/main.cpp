@@ -6,6 +6,11 @@
 int main(int argc, char* argv[]) {
   OkLab::Initialise();
 
+  /*Log::StartLine();
+  Log::Write("Conversion Matrices:\n" + OkLab::DebugsRGBtoOkLabMats());
+  Log::Write(OkLab::DebugOkLabtosRGBMats());
+  Log::EndLine();*/
+
   std::ifstream f("settings.json");
 
   if (f) {
@@ -32,7 +37,7 @@ int main(int argc, char* argv[]) {
     std::fstream paletteFile;
     std::string paletteFileLoc = settings_json["palette"];
 
-    paletteFile.open(paletteFileLoc);
+    paletteFile.open(paletteFileLoc);    
 
     if (paletteFile) {
       Log::StartLine();

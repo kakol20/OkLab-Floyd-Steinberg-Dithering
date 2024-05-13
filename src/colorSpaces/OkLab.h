@@ -60,6 +60,9 @@ public:
 
   inline void ConvertToGrayscale() { m_b = 0., m_c = 0.; };
 
+  static std::string DebugsRGBtoOkLabMats();
+  static std::string DebugOkLabtosRGBMats();
+
 private:
   static Matrix LinearRGBtoXYZ;
   static Matrix XYZtoLinearRGB;
