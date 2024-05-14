@@ -37,7 +37,7 @@ OkLab OkLab::sRGBtoOkLab(const sRGB& srgb) {
   Matrix val({ srgb.GetR(), srgb.GetG(), srgb.GetB() }, 1, 3);
 
   // to Linear RGB
-  val.Pow(2.2);
+  val.Pow(2.224874);
 
   // to CIE XYZ
   //val = OkLab::LinearRGBtoXYZ * val;
@@ -77,7 +77,7 @@ sRGB OkLab::OkLabtosRGB(const OkLab& lab) {
 
   // to sRGB
   //val.Pow(1. / 2.2);
-  val.NRoot(2.2);
+  val.NRoot(2.224874);
 
   // clamping values
 
