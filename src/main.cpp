@@ -6,10 +6,10 @@
 int main(int argc, char* argv[]) {
   OkLab::Initialise();
 
-  /*Log::StartLine();
+  Log::StartLine();
   Log::Write("Conversion Matrices:\n" + OkLab::DebugsRGBtoOkLabMats());
   Log::Write(OkLab::DebugOkLabtosRGBMats());
-  Log::EndLine();*/
+  Log::EndLine();
 
   std::ifstream f("settings.json");
 

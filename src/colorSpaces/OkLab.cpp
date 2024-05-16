@@ -1,4 +1,7 @@
 #include "OkLab.h"
+#include "../maths/Maths.hpp"
+
+//#define USE_MATRIX
 
 Matrix OkLab::LinearRGBtoXYZ({
   0.4124564, 0.3575761, 0.1804375,
@@ -33,6 +36,7 @@ void OkLab::Initialise() {
   OkLab::LabtoLMS.Invert3x3();
 }
 
+#ifdef USE_MATRIX
 OkLab OkLab::sRGBtoOkLab(const sRGB& srgb) {
   Matrix val({ srgb.GetR(), srgb.GetG(), srgb.GetB() }, 1, 3);
 
@@ -95,6 +99,73 @@ sRGB OkLab::OkLabtosRGB(const OkLab& lab) {
 
   return sRGB(r, g, b);
 }
+#else
+OkLab OkLab::sRGBtoOkLab(const sRGB& srgb) {
+  //Matrix val({ srgb.GetR(), srgb.GetG(), srgb.GetB() }, 1, 3);
+  double r1 = srgb.GetR();
+  double g1 = srgb.GetG();
+  double b1 = srgb.GetB();
+
+  // to Linear RGB
+  //val.Pow(2.224874);
+  r1 = std::pow(r1, 2.224874);
+  g1 = std::pow(g1, 2.224874);
+  b1 = std::pow(b1, 2.224874);
+
+  // to Linear LMS
+  //val = OkLab::LinearRGBtoLinearLMS * val;
+  double r2 = 0.412242 * r1 + 0.536262 * g1 + 0.051428 * b1;
+  double g2 = 0.211943 * r1 + 0.680702 * g1 + 0.107374 * b1;
+  double b2 = 0.088359 * r1 + 0.281847 * g1 + 0.630130 * b1;
+
+  // to LMS
+  //val.Cbrt()
+  r1 = std::cbrt(r2);
+  g1 = std::cbrt(g2);
+  b1 = std::cbrt(b2);
+
+  // to OkLab
+  //val = OkLab::LMStoLab * val;
+  r2 = 0.210454 * r1 + 0.793618 * g1 - 0.004072 * b1;
+  g2 = 1.977998 * r1 - 2.428592 * g1 + 0.450594 * b1;
+  b2 = 0.025904 * r1 + 0.782772 * g1 - 0.808676 * b1;
+
+  return OkLab(r2, g2, b2);
+}
+sRGB OkLab::OkLabtosRGB(const OkLab& lab) {
+  //Matrix val({ lab.GetL(), lab.GetA(), lab.GetB() }, 1, 3);
+  double l1 = lab.GetL();
+  double a1 = lab.GetA();
+  double b1 = lab.GetB();
+
+  // to LMS
+  //val = OkLab::LabtoLMS * val;
+  double l2 = l1 + 0.396338 * a1 + 0.215804 * b1;
+  double a2 = l1 - 0.105561 * a1 - 0.063854 * b1;
+  double b2 = l1 - 0.089484 * a1 - 1.291486 * b1;
+
+  // to Linear LMS
+  //val.Pow(3.);
+  l1 = l2 * l2 * l2;
+  a1 = a2 * a2 * a2;
+  b1 = b2 * b2 * b2;
+
+  // to Linear RGB
+  //val = OkLab::LinearLMStoLinearRGB * val;
+  l2 = 4.076539 * l1 - 3.307097 * a1 + 0.230822 * b1;
+  a2 = -1.268606 * l1 + 2.609748 * a1 - 0.341164 * b1;
+  b2 = -0.004198 * l1 - 0.703568 * a1 + 1.707206 * b1;
+
+  // to sRGB
+  //val.Pow(1. / 2.2);
+  //val.NRoot(2.224874);
+  l1 = Maths::NRoot(l2, 2.224874);
+  a1 = Maths::NRoot(a2, 2.224874);
+  b1 = Maths::NRoot(b2, 2.224874);
+
+  return sRGB(l1, a1, b1);
+}
+#endif // USE_MATRIX
 
 double OkLab::SqrDist(const OkLab& lab1, const OkLab& lab2) {
   const double l = lab1.m_a - lab2.m_a;
