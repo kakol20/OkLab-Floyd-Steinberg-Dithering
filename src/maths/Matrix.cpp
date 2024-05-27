@@ -2,14 +2,14 @@
 
 #include "Matrix.h"
 
-Matrix::Matrix(const std::vector<double>& arr, const unsigned int cols, const unsigned int rows) {
+Matrix::Matrix(const std::vector<long double>& arr, const unsigned int cols, const unsigned int rows) {
   m_cols = cols;
   m_rows = rows;
 
-  m_mat = Pseudo2DArray<double>(arr, m_cols, m_rows);
+  m_mat = Pseudo2DArray<long double>(arr, m_cols, m_rows);
 }
 
-Matrix::Matrix(const Pseudo2DArray<double>& arr) {
+Matrix::Matrix(const Pseudo2DArray<long double>& arr) {
   m_mat = arr;
   m_cols = m_mat.GetWidth();
   m_rows = m_mat.GetHeight();
@@ -35,11 +35,11 @@ Matrix& Matrix::operator*=(const Matrix& rhs) {
   const unsigned int newCols = rhs.m_cols;
   const unsigned int newRows = m_rows;
 
-  Pseudo2DArray<double> newMat(newCols, newRows);
+  Pseudo2DArray<long double> newMat(newCols, newRows);
 
   for (unsigned int i = 0; i < newCols; i++) {
     for (unsigned int j = 0; j < newRows; j++) {
-      double total = 0.;
+      long double total = 0.;
       for (unsigned int k = 0; k < rhs.m_rows; k++) {
         total += m_mat(k, j) * rhs.m_mat(i, k);
       }
@@ -59,7 +59,7 @@ Matrix Matrix::operator*(const Matrix& rhs) const {
   return lhs;
 }
 
-Matrix& Matrix::operator*=(const double scalar) {
+Matrix& Matrix::operator*=(const long double scalar) {
   for (unsigned int i = 0; i < m_cols; i++) {
     for (unsigned int j = 0; j < m_rows; j++) {
       m_mat(i, j) *= scalar;
@@ -68,21 +68,21 @@ Matrix& Matrix::operator*=(const double scalar) {
   return *this;
 }
 
-Matrix Matrix::operator*(const double scalar) const {
+Matrix Matrix::operator*(const long double scalar) const {
   Matrix lhs(*this);
   lhs *= scalar;
   return lhs;
 }
 
-double& Matrix::operator()(const unsigned int x, const unsigned int y) {
+long double& Matrix::operator()(const unsigned int x, const unsigned int y) {
   return m_mat(x, y);
 }
 
-double Matrix::operator()(const unsigned int x, const unsigned int y) const {
+long double Matrix::operator()(const unsigned int x, const unsigned int y) const {
   return m_mat(x, y);
 }
 
-void Matrix::Pow(const double p) {
+void Matrix::Pow(const long double p) {
   for (unsigned int i = 0; i < m_cols; i++) {
     for (unsigned int j = 0; j < m_rows; j++) {
       m_mat(i, j) = std::pow(m_mat(i, j), p);
@@ -98,15 +98,15 @@ void Matrix::Cbrt() {
   }
 }
 
-void Matrix::NRoot(const double n) {
-  const double exp = 1. / n;
+void Matrix::NRoot(const long double n) {
+  const long double exp = 1. / n;
   for (unsigned int i = 0; i < m_cols; i++) {
     for (unsigned int j = 0; j < m_rows; j++) {
       if (std::fmod(n, 1.) == 0.) {
         m_mat(i, j) = std::pow(m_mat(i, j), exp);
       }
       else {
-        double absroot = std::pow(std::abs(m_mat(i, j)), exp);
+        long double absroot = std::pow(std::abs(m_mat(i, j)), exp);
         if (m_mat(i, j) < 0.) absroot *= -1.;
         m_mat(i, j) = absroot;
       }
@@ -114,7 +114,7 @@ void Matrix::NRoot(const double n) {
   }
 }
 
-double Matrix::Determinant3x3() const {
+long double Matrix::Determinant3x3() const {
   if (m_cols == 3 && m_rows == 3) {
     return 
       (m_mat(0, 0) * m_mat(1, 1) * m_mat(2, 2)) +
@@ -129,7 +129,7 @@ double Matrix::Determinant3x3() const {
 }
 
 void Matrix::Transpose() {
-  Pseudo2DArray<double> newMat(m_rows, m_cols);
+  Pseudo2DArray<long double> newMat(m_rows, m_cols);
 
   for (unsigned int i = 0; i < m_cols; i++) {
     for (unsigned int j = 0; j < m_rows; j++) {
@@ -144,7 +144,7 @@ void Matrix::Transpose() {
   //return true;
 }
 
-double Matrix::Determinant2x2() const {
+long double Matrix::Determinant2x2() const {
   if (m_cols == 2 && m_rows == 2) {
     return (m_mat(0, 0) * m_mat(1, 1)) -
       (m_mat(1, 0) * m_mat(0, 1));
@@ -154,7 +154,7 @@ double Matrix::Determinant2x2() const {
 
 bool Matrix::Cofactor3x3() {
   if (m_cols == 3 && m_rows == 3) {
-    Pseudo2DArray<double> newMat = m_mat;
+    Pseudo2DArray<long double> newMat = m_mat;
     for (unsigned int i = 0; i < m_cols; i++) {
       for (unsigned int j = 0; j < m_rows; j++) {
         //newMat(j, i) = m_mat(i, j);
@@ -164,13 +164,13 @@ bool Matrix::Cofactor3x3() {
         const unsigned int rowMax = j <= 1 ? 2 : 1;
         const unsigned int rowMin = j >= 1 ? 0 : 1;
 
-        std::vector<double> detArr = {
+        std::vector<long double> detArr = {
           m_mat(colMin, rowMin), m_mat(colMax, rowMin),
           m_mat(colMin, rowMax), m_mat(colMax, rowMax)
         };
 
         const Matrix detMat(detArr, 2, 2);
-        newMat(i, j) = detMat.Determinant2x2() * (double)std::pow(-1, i + j + 2);
+        newMat(i, j) = detMat.Determinant2x2() * (long double)std::pow(-1, i + j + 2);
       }
     }
     m_mat = newMat;
@@ -186,7 +186,7 @@ bool Matrix::Invert3x3() {
     if (!adjoint.Cofactor3x3()) return false;
     adjoint.Transpose();
 
-    const double determinant = (*this).Determinant3x3();
+    const long double determinant = (*this).Determinant3x3();
 
     if (determinant == 0.) return false;
 

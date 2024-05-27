@@ -6,7 +6,7 @@
 
 class OkLab : public ColorSpace {
 public:
-  OkLab(const double l = 0, const double a = 0, const double b = 0) : ColorSpace(l, a, b) {};
+  OkLab(const long double l = 0, const long double a = 0, const long double b = 0) : ColorSpace(l, a, b) {};
   OkLab(const OkLab& other) : ColorSpace(other) {};
 
   /// <summary>
@@ -14,9 +14,9 @@ public:
   /// </summary>
   static void Initialise();
 
-  inline double GetL() const { return m_a; };
-  inline double GetA() const { return m_b; };
-  inline double GetB() const { return m_c; };
+  inline long double GetL() const { return m_a; };
+  inline long double GetA() const { return m_b; };
+  inline long double GetB() const { return m_c; };
 
   /// <summary>
   /// Convert sRGB to OkLab
@@ -38,12 +38,12 @@ public:
   /// <param name="lab1"></param>
   /// <param name="lab2"></param>
   /// <returns></returns>
-  static double SqrDist(const OkLab& lab1, const OkLab& lab2);
+  static long double SqrDist(const OkLab& lab1, const OkLab& lab2);
 
-  static double Dist(const OkLab& lab1, const OkLab& lab2);
+  static long double Dist(const OkLab& lab1, const OkLab& lab2);
 
-  OkLab operator*(const double scalar) const;
-  OkLab& operator*=(const double scalar);
+  OkLab operator*(const long double scalar) const;
+  OkLab& operator*=(const long double scalar);
 
   OkLab operator+(const OkLab& other) const;
   OkLab& operator+=(const OkLab& other);
@@ -56,7 +56,7 @@ public:
   /// </summary>
   void RGBClamp();
 
-  bool IsGrayscale(const double threshold) const;
+  bool IsGrayscale(const long double threshold) const;
 
   inline void ConvertToGrayscale() { m_b = 0., m_c = 0.; };
 

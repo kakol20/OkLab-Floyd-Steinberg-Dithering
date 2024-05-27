@@ -10,7 +10,7 @@ sRGB sRGB::HexTosRGB(const std::string hex) {
   const unsigned int gMask = 0x00FF00;
   const unsigned int bMask = 0x0000FF;
 
-  return sRGB(double((hexInt & rMask) >> 16) / 255., double((hexInt & gMask) >> 8) / 255., double(hexInt & bMask) / 255.);
+  return sRGB(long double((hexInt & rMask) >> 16) / 255., long double((hexInt & gMask) >> 8) / 255., long double(hexInt & bMask) / 255.);
 }
 
 uint8_t sRGB::GetRUInt() const {
@@ -54,13 +54,13 @@ void sRGB::Clamp() {
   m_c = m_c < 0 ? 0 : m_c;
 }
 
-sRGB sRGB::operator*(const double scalar) const {
+sRGB sRGB::operator*(const long double scalar) const {
   sRGB out(m_a, m_b, m_c);
   out *= scalar;
   return out;
 }
 
-sRGB& sRGB::operator*=(const double scalar) {
+sRGB& sRGB::operator*=(const long double scalar) {
   m_a *= scalar;
   m_b *= scalar;
   m_c *= scalar;

@@ -4,16 +4,16 @@
 
 class Log {
 public:
-    Log() {};
-    ~Log() {};
+  Log() {};
+  ~Log() {};
 
-    static void Write(const std::string input);
+  static void Write(const std::string input);
 
-    static void EndLine();
-    static void StartLine();
+  static void EndLine();
+  static void StartLine();
 
-    static void Save(const bool overwrite = true);
+  static void Save(const bool overwrite = true);
 
 private:
-    static std::string Console;
+  static std::string Console;
 };

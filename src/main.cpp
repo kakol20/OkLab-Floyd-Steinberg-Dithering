@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
               auto stop = std::chrono::high_resolution_clock::now();
               auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
               if (duration.count() >= 5000) {
-                double progress = double(index) / double(originalImage.GetSize());
+                long double progress = long double(index) / long double(originalImage.GetSize());
                 progress *= 100.;
 
                 Log::EndLine();
@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
           auto stop = std::chrono::high_resolution_clock::now();
           auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
           if (duration.count() >= 5000) {
-            double progress = double(i) / double(originalImage.GetSize());
+            long double progress = long double(i) / long double(originalImage.GetSize());
             progress *= 100.;
 
             Log::EndLine();
@@ -199,7 +199,7 @@ int main(int argc, char* argv[]) {
             auto stop = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
             if (duration.count() >= 5000) {
-              double progress = double(img_index) / double(copyImage.GetSize());
+              long double progress = long double(img_index) / long double(copyImage.GetSize());
               progress *= 100.;
 
               Log::EndLine();
@@ -243,10 +243,10 @@ int main(int argc, char* argv[]) {
 sRGB ClosestPaletteColorRGB(const std::vector<OkLab>& palette, const sRGB& col) {
   const OkLab col_lab = OkLab::sRGBtoOkLab(col);
   OkLab closest = palette[0];
-  double closestDist = OkLab::SqrDist(col_lab, closest);
+  long double closestDist = OkLab::SqrDist(col_lab, closest);
 
   for (size_t i = 1; i < palette.size(); i++) {
-    double dist = OkLab::SqrDist(col_lab, palette[i]);
+    long double dist = OkLab::SqrDist(col_lab, palette[i]);
 
     if (dist < closestDist) {
       closest = palette[i];
@@ -259,10 +259,10 @@ sRGB ClosestPaletteColorRGB(const std::vector<OkLab>& palette, const sRGB& col) 
 
 OkLab ClosestPaletteColorLAB(const std::vector<OkLab>& palette, const OkLab& lab) {
   OkLab closest = palette[0];
-  double closestDist = OkLab::SqrDist(lab, closest);
+  long double closestDist = OkLab::SqrDist(lab, closest);
 
   for (size_t i = 1; i < palette.size(); i++) {
-    double dist = OkLab::SqrDist(lab, palette[i]);
+    long double dist = OkLab::SqrDist(lab, palette[i]);
 
     if (dist < closestDist) {
       closest = palette[i];
