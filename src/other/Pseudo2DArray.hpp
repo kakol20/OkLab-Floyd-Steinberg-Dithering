@@ -2,6 +2,8 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
+#include <iomanip>
 
 template <class T>
 class Pseudo2DArray {
@@ -88,7 +90,7 @@ inline T Pseudo2DArray<T>::operator()(const unsigned int x, const unsigned int y
 
 template<class T>
 inline std::string Pseudo2DArray<T>::Debug(const int indentSize) const {
-  std::string out = "";
+  /*std::string out = "";
   for (unsigned int y = 0; y < m_height; y++) {
     for (int s = 0; s < indentSize; s++) {
       out += ' ';
@@ -99,7 +101,24 @@ inline std::string Pseudo2DArray<T>::Debug(const int indentSize) const {
     }
     out += '\n';
   }
-  return out;
+  return out;*/
+
+  std::stringstream ss;
+
+  ss << std::setprecision(10);
+
+  for (unsigned int y = 0; y < m_height; y++) {
+    for (int s = 0; s < indentSize; s++) {
+      ss << ' ';
+    }
+
+    for (unsigned int x = 0; x < m_width; x++) {
+      ss << m_arr[GetIndex(x, y)];
+      ss << ' ';
+    }
+    ss << '\n';
+  }
+  return ss.str();
 }
 
 template<class T>
