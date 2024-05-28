@@ -5,16 +5,17 @@
 #include <ctime>
 #include <chrono>
 
-std::string Log::Console = "";
+std::string Log::m_console = "";
+std::chrono::steady_clock::time_point Log::m_time = std::chrono::high_resolution_clock::now();
 
 void Log::Write(const std::string input) {
   std::cout << input;
-  Log::Console += input;
+  Log::m_console += input;
 }
 
 void Log::EndLine() {
   std::cout << '\n';
-  Log::Console += "\n";
+  Log::m_console += "\n";
 }
 
 void Log::StartLine() {
@@ -58,7 +59,7 @@ void Log::StartLine() {
     + hour + ":" + min + ":" + sec + "." + mil + " ";
 
   std::cout << line;
-  Log::Console += line;
+  Log::m_console += line;
 }
 
 void Log::Save(const bool overwrite) {
@@ -81,7 +82,21 @@ void Log::Save(const bool overwrite) {
     }
   }
 
-  consoleLog << Log::Console;
+  consoleLog << Log::m_console;
 
   consoleLog.close();
+}
+
+void Log::StartTime() {
+  Log::m_time = std::chrono::high_resolution_clock::now();
+}
+
+bool Log::CheckTime(const long long milliseconds) {
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - Log::m_time);
+  return duration.count() >= milliseconds;
+}
+
+bool Log::CheckTimeSeconds(const double seconds) {
+  return Log::CheckTime((long long)(std::ceil(seconds * 1000)));
 }
