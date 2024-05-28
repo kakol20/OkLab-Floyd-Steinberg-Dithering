@@ -9,7 +9,7 @@ const double Maths::RadToDeg = 180. / Maths::Pi;
 const double Maths::DegToRad = Maths::Pi / 180.;
 
 int main(int argc, char* argv[]) {
-  std::ifstream f("settings.json");
+  /*std::ifstream f("settings.json");
 
   if (f) {
     
@@ -20,10 +20,14 @@ int main(int argc, char* argv[]) {
     Log::EndLine();
   }
 
-  Log::Save();
+  Log::Save();*/
 
   //std::cout << "\nPress enter to exit...\n";
   //std::cin.ignore();
+
+  GeneratePalette("data/minecraft_wool");
+
+  Log::Save();
   return 0;
 }
 
@@ -45,18 +49,46 @@ sRGB ClosestPaletteColorRGB(const std::vector<sRGB>& palette, const sRGB& col) {
   return sRGB();
 }
 
-OkLab ClosestPaletteColorLAB(const std::vector<OkLab>& palette, const OkLab& lab) {
-  /*OkLab closest = palette[0];
-  long double closestDist = OkLab::SqrDist(lab, closest);
+bool GeneratePalette(const std::string& baseFile) {
+  const std::string baseFileLoc = baseFile + "_b.palette";
+  const std::string flatFileLoc = baseFile + "_f.palette";
+  const std::string stairFileLoc = baseFile + "_sc.palette";
 
-  for (size_t i = 1; i < palette.size(); i++) {
-    long double dist = OkLab::SqrDist(lab, palette[i]);
+  std::fstream bFile(baseFileLoc);
 
-    if (dist < closestDist) {
-      closest = palette[i];
-      closestDist = dist;
+  if (bFile) {
+    Log::StartLine();
+    Log::Write(baseFileLoc);
+    Log::Write(" opened");
+    Log::EndLine();
+
+    std::fstream fFile;
+    fFile.open(flatFileLoc, std::ios_base::out);
+
+    std::fstream scFile;
+    scFile.open(stairFileLoc, std::ios_base::out);
+
+    std::string line;
+    while (std::getline(bFile, line)) {
+      const sRGB high = sRGB::HexTosRGB(line);
+      const sRGB low = high * 0.71;
+      const sRGB mid = high * 0.86;
+
+      fFile << mid.sRGBtoHex() + "\n";
+
+      scFile << low.sRGBtoHex() + "\n" + mid.sRGBtoHex() + "\n" + high.sRGBtoHex() + "\n";
     }
+
+    fFile.close();
+    scFile.close();
   }
-  return closest;*/
-  return OkLab();
+  else {
+    Log::StartLine();
+    Log::Write(baseFileLoc);
+    Log::Write(" not found");
+    Log::EndLine();
+  }
+  bFile.close();
+
+  return false;
 }
