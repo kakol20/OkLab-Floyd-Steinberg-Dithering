@@ -30,6 +30,8 @@ public:
 
   void Clamp();
 
+  bool IsInside() const;
+
   sRGB operator*(const long double scalar) const;
   sRGB& operator*=(const long double scalar);
 

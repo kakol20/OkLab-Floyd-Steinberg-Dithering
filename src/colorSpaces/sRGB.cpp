@@ -54,6 +54,11 @@ void sRGB::Clamp() {
   m_c = m_c < 0 ? 0 : m_c;
 }
 
+bool sRGB::IsInside() const {
+  return m_a >= 0.L && m_b >= 0.L && m_c >= 0.L &&
+    m_a <= 1.L && m_b <= 1.L && m_c <= 1.L;
+}
+
 sRGB sRGB::operator*(const long double scalar) const {
   sRGB out(m_a, m_b, m_c);
   out *= scalar;

@@ -1,5 +1,6 @@
 #include "OkLab.h"
 #include "../maths/Maths.hpp"
+#include "OkLCh.h"
 
 //#define USE_MATRIX
 
@@ -218,7 +219,7 @@ OkLab& OkLab::operator-=(const OkLab& other) {
 }
 
 void OkLab::RGBClamp() {
-  OkLab lab(m_a, m_b, m_c);
+  /*OkLab lab(m_a, m_b, m_c);
   sRGB rgb = OkLab::OkLabtosRGB(lab);
   rgb.Clamp();
 
@@ -226,7 +227,19 @@ void OkLab::RGBClamp() {
 
   m_a = lab.m_a;
   m_b = lab.m_b;
-  m_c = lab.m_c;
+  m_c = lab.m_c;*/
+
+  sRGB rgb = OkLab::OkLabtosRGB(*this);
+  if (!rgb.IsInside()) {
+    OkLCh lch = OkLCh::OkLabtoOkLCh(*this);
+    lch.Fallback();
+
+    OkLab lab = OkLCh::OkLChtoOkLab(lch);
+
+    m_a = lab.m_a;
+    m_b = lab.m_b;
+    m_c = lab.m_c;
+  }
 }
 
 /// <summary>

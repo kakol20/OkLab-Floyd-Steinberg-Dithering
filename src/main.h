@@ -16,11 +16,12 @@
 #include "../ext/json/json.hpp"
 using json = nlohmann::json;
 
-#include "other/Log.h"
-#include "maths/Matrix.h"
 #include "colorSpaces/ColorSpace.h"
-#include "colorSpaces/sRGB.h"
 #include "colorSpaces/OkLab.h"
+#include "colorSpaces/sRGB.h"
+#include "maths/Maths.hpp"
+#include "maths/Matrix.h"
+#include "other/Log.h"
 
 #include "image/Image.h"
 

@@ -3,6 +3,11 @@
 
 #include "main.h"
 
+const long double Maths::Pi = 3.1415926535;
+const long double Maths::Tau = 6.283185307;
+const long double Maths::RadToDeg = 180. / Maths::Pi;
+const long double Maths::DegToRad = Maths::Pi / 180.;
+
 int main(int argc, char* argv[]) {
   OkLab::Initialise();
 
