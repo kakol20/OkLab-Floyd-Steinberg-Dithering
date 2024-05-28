@@ -1,78 +1,33 @@
 #pragma once
 
-#include "ColorSpace.h"
-#include "sRGB.h"
-#include "../maths/Matrix.h"
+#include "ColorSpace.hpp"
+#include "sRGB.hpp"
 
 class OkLab : public ColorSpace {
 public:
-  OkLab(const long double l = 0, const long double a = 0, const long double b = 0) : ColorSpace(l, a, b) {};
+  OkLab(const double l = 0., const double a = 0., const double b = 0.) : ColorSpace(l, a, b) {};
   OkLab(const OkLab& other) : ColorSpace(other) {};
 
-  /// <summary>
-  /// Initialise static conversion matrices
-  /// </summary>
-  static void Initialise();
+  double GetL() const { return m_a; };
+  double GetA() const { return m_b; };
+  double GetB() const { return m_c; };
 
-  inline long double GetL() const { return m_a; };
-  inline long double GetA() const { return m_b; };
-  inline long double GetB() const { return m_c; };
-
-  /// <summary>
-  /// Convert sRGB to OkLab
-  /// </summary>
-  /// <param name="srgb"></param>
-  /// <returns></returns>
   static OkLab sRGBtoOkLab(const sRGB& srgb);
+  static sRGB OkLabtosRGB(const OkLab& oklab);
 
-  /// <summary>
-  /// Convert OkLab to sRGB
-  /// </summary>
-  /// <param name="lab"></param>
-  /// <returns></returns>
-  static sRGB OkLabtosRGB(const OkLab& lab);
-
-  /// <summary>
-  /// Find the square distance between two OkLabs
-  /// </summary>
-  /// <param name="lab1"></param>
-  /// <param name="lab2"></param>
-  /// <returns></returns>
-  static long double SqrDist(const OkLab& lab1, const OkLab& lab2);
-
-  static long double Dist(const OkLab& lab1, const OkLab& lab2);
-
-  OkLab operator*(const long double scalar) const;
-  OkLab& operator*=(const long double scalar);
-
-  OkLab operator+(const OkLab& other) const;
+  OkLab& operator/=(const OkLab& other);
+  OkLab& operator*=(const OkLab& other);
   OkLab& operator+=(const OkLab& other);
-
-  OkLab operator-(const OkLab& other) const;
   OkLab& operator-=(const OkLab& other);
+  OkLab& operator*=(const double scalar);
 
-  /// <summary>
-  /// Clamp based on its RGB value
-  /// </summary>
-  void RGBClamp();
+  OkLab operator/(const OkLab& other) const { OkLab out(*this); out /= other; return out; };
+  OkLab operator*(const OkLab& other) const { OkLab out(*this); out *= other; return out; };
+  OkLab operator+(const OkLab& other) const { OkLab out(*this); out += other; return out; };
+  OkLab operator-(const OkLab& other) const { OkLab out(*this); out -= other; return out; };
+  OkLab operator*(const double scalar) const { OkLab out(*this); out *= scalar; return out; };
 
-  bool IsGrayscale(const long double threshold) const;
+  bool IsInsidesRGB() const;
 
-  inline void ConvertToGrayscale() { m_b = 0., m_c = 0.; };
-
-  static std::string DebugsRGBtoOkLabMats();
-  static std::string DebugOkLabtosRGBMats();
-
-private:
-  static Matrix LinearRGBtoXYZ;
-  static Matrix XYZtoLinearRGB;
-
-  static Matrix XYZtoLinearLMS;
-  static Matrix LinearLMStoXYZ;
-
-  static Matrix LMStoLab;
-  static Matrix LabtoLMS;
-
-  static Matrix LinearRGBtoLinearLMS;
-  static Matrix LinearLMStoLinearRGB;
+  static double Distance(const OkLab& lab1, const OkLab& lab2, const bool lightMode = false);
 };

@@ -1,30 +1,44 @@
 #pragma once
 
-#include "ColorSpace.h"
+#include "ColorSpace.hpp"
 #include "OkLab.h"
+#include "sRGB.hpp"
+#include <string>
 
 class OkLCh : public ColorSpace {
 public:
-  OkLCh(const long double l = 0, const long double c = 0, const long double h = 0) : ColorSpace(l, c, h) {};
+  OkLCh(const double l = 0., const double c = 0., const double h = 0.) : ColorSpace(l, c, h) {};
   OkLCh(const OkLCh& other) : ColorSpace(other) {};
 
-  inline long double GetL() const { return m_a; };
-  inline long double GetC() const { return m_b; };
-  inline long double GetH() const { return m_c; };
+  double GetL() const { return m_a; };
+  double GetC() const { return m_b; };
+  double GetH() const { return m_c; };
+
+  static OkLCh sRGBtoOkLCh(const sRGB& srgb);
+  static sRGB OkLChtosRGB(const OkLCh& oklch);
+
+  static OkLCh OkLabtoOkLCh(const OkLab& oklab);
+  static OkLab OkLChtoOkLab(const OkLCh& oklch);
 
   /// <summary>
-  /// Convert OkLab to OkLCh
+  /// Overriden function to account for hue value
   /// </summary>
-  /// <param name="lab"></param>
+  /// <param name="inDegrees">Stored value is in radians</param>
   /// <returns></returns>
-  static OkLCh OkLabtoOkLCh(const OkLab& lab);
+  std::string Debug(const bool inDegrees = true) const;
 
-  /// <summary>
-  /// Convert OkLCh to OkLab
-  /// </summary>
-  /// <param name="lch"></param>
-  /// <returns></returns>
-  static OkLab OkLChtoOkLab(const OkLCh& lch);
+  OkLCh& operator/=(const OkLCh& other);
+  OkLCh& operator*=(const OkLCh& other);
+  OkLCh& operator+=(const OkLCh& other);
+  OkLCh& operator-=(const OkLCh& other);
+  OkLCh& operator*=(const double scalar);
 
-  void Fallback(const long double change = 0.001);
+  OkLCh operator/(const OkLCh& other) const { OkLCh out(*this); out /= other; return out; };
+  OkLCh operator*(const OkLCh& other) const { OkLCh out(*this); out *= other; return out; };
+  OkLCh operator+(const OkLCh& other) const { OkLCh out(*this); out += other; return out; };
+  OkLCh operator-(const OkLCh& other) const { OkLCh out(*this); out -= other; return out; };
+  OkLCh operator*(const double scalar) const { OkLCh out(*this); out *= scalar; return out; };
+
+  void Fallback(const double change = 0.001);
+  bool IsInsidesRGB() const;
 };

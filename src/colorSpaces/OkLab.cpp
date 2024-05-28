@@ -1,271 +1,103 @@
 #include "OkLab.h"
+
 #include "../maths/Maths.hpp"
-#include "OkLCh.h"
 
-//#define USE_MATRIX
-
-Matrix OkLab::LinearRGBtoXYZ({
-  0.4124564, 0.3575761, 0.1804375,
-  0.2126729, 0.7151522, 0.0721750,
-  0.0193339, 0.1191920, 0.9503041 }, 3, 3);
-
-Matrix OkLab::XYZtoLinearRGB(OkLab::LinearRGBtoXYZ);
-
-Matrix OkLab::XYZtoLinearLMS({
-  0.8189330101, 0.3618667424, -0.1288597137,
-  0.0329845436, 0.9293118715, 0.0361456387,
-  0.0482003018, 0.2643662691, 0.6338517070 }, 3, 3);
-
-Matrix OkLab::LinearLMStoXYZ(OkLab::XYZtoLinearLMS);
-
-Matrix OkLab::LMStoLab({
-  0.2104542553, 0.7936177850, -0.0040720468,
-  1.9779984951, -2.4285922050, 0.4505937099,
-  0.0259040371, 0.7827717662, -0.8086757660 }, 3, 3);
-Matrix OkLab::LabtoLMS(OkLab::LMStoLab);
-
-Matrix OkLab::LinearRGBtoLinearLMS(OkLab::XYZtoLinearLMS);
-Matrix OkLab::LinearLMStoLinearRGB(OkLab::LinearRGBtoLinearLMS);
-
-void OkLab::Initialise() {
-  OkLab::LinearRGBtoLinearLMS = OkLab::XYZtoLinearLMS * OkLab::LinearRGBtoXYZ;
-  OkLab::LinearLMStoLinearRGB = OkLab::LinearRGBtoLinearLMS;
-  OkLab::LinearLMStoLinearRGB.Invert3x3();
-
-  OkLab::XYZtoLinearRGB.Invert3x3();
-  OkLab::LinearLMStoXYZ.Invert3x3();
-  OkLab::LabtoLMS.Invert3x3();
-}
-
-#ifdef USE_MATRIX
 OkLab OkLab::sRGBtoOkLab(const sRGB& srgb) {
-  Matrix val({ srgb.GetR(), srgb.GetG(), srgb.GetB() }, 1, 3);
+  double l1 = srgb.GetR();
+  double a1 = srgb.GetG();
+  double b1 = srgb.GetB();
 
   // to Linear RGB
-  val.Pow(2.224874);
-
-  // to CIE XYZ
-  //val = OkLab::LinearRGBtoXYZ * val;
-
-  // to Linear LMS
-  //val = OkLab::XYZtoLinearLMS * val;
+  l1 = l1 <= 0.04045 ? l1 / 12.92 : std::pow((l1 + 0.055) / 1.055, 2.4);
+  a1 = a1 <= 0.04045 ? a1 / 12.92 : std::pow((a1 + 0.055) / 1.055, 2.4);
+  b1 = b1 <= 0.04045 ? b1 / 12.92 : std::pow((b1 + 0.055) / 1.055, 2.4);
 
   // to Linear LMS
-  val = OkLab::LinearRGBtoLinearLMS * val;
+  double l2 = 0.4122214708 * l1 + 0.5363325363 * a1 + 0.0514459929 * b1;
+  double a2 = 0.2119034982 * l1 + 0.6806995451 * a1 + 0.1073969566 * b1;
+  double b2 = 0.0883024619 * l1 + 0.2817188376 * a1 + 0.6299787005 * b1;
 
   // to LMS
-  val.Cbrt();
-
-  // to OkLab
-  val = OkLab::LMStoLab * val;
-
-  return OkLab(val(0, 0), val(0, 1), val(0, 2));
-}
-
-sRGB OkLab::OkLabtosRGB(const OkLab& lab) {
-  Matrix val({ lab.GetL(), lab.GetA(), lab.GetB() }, 1, 3);
-
-  // to LMS
-  val = OkLab::LabtoLMS * val;
-
-  // to Linear LMS
-  val.Pow(3.);
-
-  // to CIE XYZ
-  //val = OkLab::LinearLMStoXYZ * val;
-
-  // to Linear RGB
-  //val = OkLab::XYZtoLinearRGB * val;
-
-  // to Linear RGB
-  val = OkLab::LinearLMStoLinearRGB * val;
-
-  // to sRGB
-  //val.Pow(1. / 2.2);
-  val.NRoot(2.224874);
-
-  // clamping values
-
-  // long double r = val.GetValue(0, 0) > 1. ? 1. : val.GetValue(0, 0);
-  // long double g = val.GetValue(0, 1) > 1. ? 1. : val.GetValue(0, 1);
-  // long double b = val.GetValue(0, 2) > 1. ? 1. : val.GetValue(0, 2);
-
-  // r = r < 0 ? 0 : r;
-  // g = g < 0 ? 0 : g;
-  // b = b < 0 ? 0 : b;
-
-  long double r = val(0, 0);
-  long double g = val(0, 1);
-  long double b = val(0, 2);
-
-  return sRGB(r, g, b);
-}
-#else
-OkLab OkLab::sRGBtoOkLab(const sRGB& srgb) {
-  //Matrix val({ srgb.GetR(), srgb.GetG(), srgb.GetB() }, 1, 3);
-  long double r1 = srgb.GetR();
-  long double g1 = srgb.GetG();
-  long double b1 = srgb.GetB();
-
-  // to Linear RGB
-  //val.Pow(2.224874);
-  r1 = std::pow(r1, 2.224874);
-  g1 = std::pow(g1, 2.224874);
-  b1 = std::pow(b1, 2.224874);
-
-  // to Linear LMS
-  //val = OkLab::LinearRGBtoLinearLMS * val;
-  long double r2 = 0.412242 * r1 + 0.536262 * g1 + 0.051428 * b1;
-  long double g2 = 0.211943 * r1 + 0.680702 * g1 + 0.107374 * b1;
-  long double b2 = 0.088359 * r1 + 0.281847 * g1 + 0.630130 * b1;
-
-  // to LMS
-  //val.Cbrt()
-  r1 = std::cbrt(r2);
-  g1 = std::cbrt(g2);
+  l1 = std::cbrt(l2);
+  a1 = std::cbrt(a2);
   b1 = std::cbrt(b2);
 
   // to OkLab
-  //val = OkLab::LMStoLab * val;
-  r2 = 0.210454 * r1 + 0.793618 * g1 - 0.004072 * b1;
-  g2 = 1.977998 * r1 - 2.428592 * g1 + 0.450594 * b1;
-  b2 = 0.025904 * r1 + 0.782772 * g1 - 0.808676 * b1;
+  l2 = 0.2104542553 * l1 + 0.7936177850 * a1 - 0.0040720468 * b1;
+  a2 = 1.9779984951 * l1 - 2.4285922050 * a1 + 0.4505937099 * b1;
+  b2 = 0.0259040371 * l1 + 0.7827717662 * a1 - 0.8086757660 * b1;
 
-  return OkLab(r2, g2, b2);
+  return OkLab(l2, a2, b2);
 }
-sRGB OkLab::OkLabtosRGB(const OkLab& lab) {
-  //Matrix val({ lab.GetL(), lab.GetA(), lab.GetB() }, 1, 3);
-  long double l1 = lab.GetL();
-  long double a1 = lab.GetA();
-  long double b1 = lab.GetB();
+
+sRGB OkLab::OkLabtosRGB(const OkLab& oklab) {
+  double r1 = oklab.GetL();
+  double g1 = oklab.GetA();
+  double b1 = oklab.GetB();
 
   // to LMS
-  //val = OkLab::LabtoLMS * val;
-  long double l2 = l1 + 0.396338 * a1 + 0.215804 * b1;
-  long double a2 = l1 - 0.105561 * a1 - 0.063854 * b1;
-  long double b2 = l1 - 0.089484 * a1 - 1.291486 * b1;
+  double r2 = r1 + 0.3963377774 * g1 + 0.2158037573 * b1;
+  double g2 = r1 - 0.1055613458 * g1 - 0.0638541728 * b1;
+  double b2 = r1 - 0.0894841775 * g1 - 1.2914855480 * b1;
 
   // to Linear LMS
-  //val.Pow(3.);
-  l1 = l2 * l2 * l2;
-  a1 = a2 * a2 * a2;
+  r1 = r2 * r2 * r2;
+  g1 = g2 * g2 * g2;
   b1 = b2 * b2 * b2;
 
   // to Linear RGB
-  //val = OkLab::LinearLMStoLinearRGB * val;
-  l2 = 4.076539 * l1 - 3.307097 * a1 + 0.230822 * b1;
-  a2 = -1.268606 * l1 + 2.609748 * a1 - 0.341164 * b1;
-  b2 = -0.004198 * l1 - 0.703568 * a1 + 1.707206 * b1;
+  r2 =  4.0767416621 * r1 - 3.3077115913 * g1 + 0.2309699292 * b1;
+  g2 = -1.2684380046 * r1 + 2.6097574011 * g1 - 0.3413193965 * b1;
+  b2 = -0.0041960863 * r1 - 0.7034186147 * g1 + 1.7076147010 * b1;
 
   // to sRGB
-  //val.Pow(1. / 2.2);
-  //val.NRoot(2.224874);
-  l1 = Maths::NRoot(l2, 2.224874);
-  a1 = Maths::NRoot(a2, 2.224874);
-  b1 = Maths::NRoot(b2, 2.224874);
-
-  return sRGB(l1, a1, b1);
-}
-#endif // USE_MATRIX
-
-long double OkLab::SqrDist(const OkLab& lab1, const OkLab& lab2) {
-  const long double l = lab1.m_a - lab2.m_a;
-  const long double a = lab1.m_b - lab2.m_b;
-  const long double b = lab1.m_c - lab2.m_c;
-  return (l * l) + (a * a) + (b * b);
+  r2 = r2 <= 0.00313058 ? 12.92 * r2 : (Maths::NRoot(r2, 2.4) * 1.055) - 0.055;
+  g2 = g2 <= 0.00313058 ? 12.92 * g2 : (Maths::NRoot(g2, 2.4) * 1.055) - 0.055;
+  b2 = b2 <= 0.00313058 ? 12.92 * b2 : (Maths::NRoot(b2, 2.4) * 1.055) - 0.055;
+  return sRGB(r2, g2, b2);
 }
 
-long double OkLab::Dist(const OkLab& lab1, const OkLab& lab2) {
-  return std::sqrt(OkLab::SqrDist(lab1, lab2));
-}
-
-OkLab OkLab::operator*(const long double scalar) const {
-  OkLab out(*this);
-  out *= scalar;
-  return out;
-}
-
-OkLab& OkLab::operator*=(const long double scalar) {
-  m_a *= scalar;
-  m_b *= scalar;
-  m_c *= scalar;
+OkLab& OkLab::operator/=(const OkLab& other) {
+  ColorSpace lhs(other);
+  ColorSpace::operator/=(lhs);
   return *this;
 }
 
-OkLab OkLab::operator+(const OkLab& other) const {
-  OkLab out(*this);
-  out += other;
-  return out;
+OkLab& OkLab::operator*=(const OkLab& other) {
+  ColorSpace lhs(other);
+  ColorSpace::operator*=(lhs);
+  return *this;
 }
 
 OkLab& OkLab::operator+=(const OkLab& other) {
-  m_a += other.m_a;
-  m_b += other.m_b;
-  m_c += other.m_c;
+  ColorSpace lhs(other);
+  ColorSpace::operator+=(lhs);
   return *this;
-}
-
-OkLab OkLab::operator-(const OkLab& other) const {
-  OkLab out(*this);
-  out -= other;
-  return out;
 }
 
 OkLab& OkLab::operator-=(const OkLab& other) {
-  m_a -= other.m_a;
-  m_b -= other.m_b;
-  m_c -= other.m_c;
+  ColorSpace lhs(other);
+  ColorSpace::operator-=(lhs);
   return *this;
 }
 
-void OkLab::RGBClamp() {
-  /*OkLab lab(m_a, m_b, m_c);
-  sRGB rgb = OkLab::OkLabtosRGB(lab);
-  rgb.Clamp();
+OkLab& OkLab::operator*=(const double scalar) {
+  ColorSpace::operator*=(scalar);
+  return *this;
+}
 
-  lab = OkLab::sRGBtoOkLab(rgb);
+bool OkLab::IsInsidesRGB() const {
+  sRGB current = OkLab::OkLabtosRGB(*this);
+  return current.IsInside();
+}
 
-  m_a = lab.m_a;
-  m_b = lab.m_b;
-  m_c = lab.m_c;*/
-
-  sRGB rgb = OkLab::OkLabtosRGB(*this);
-  if (!rgb.IsInside()) {
-    OkLCh lch = OkLCh::OkLabtoOkLCh(*this);
-    lch.Fallback();
-
-    OkLab lab = OkLCh::OkLChtoOkLab(lch);
-
-    m_a = lab.m_a;
-    m_b = lab.m_b;
-    m_c = lab.m_c;
+double OkLab::Distance(const OkLab& lab1, const OkLab& lab2, const bool lightMode) {
+  if (lightMode) {
+    return std::abs(lab1.GetL() - lab2.GetL());
   }
-}
-
-/// <summary>
-/// Checks if colour is grayscale
-/// </summary>
-/// <param name="threshold">Uses OkLab colour space so small number may be required such as 0.01</param>
-/// <returns></returns>
-bool OkLab::IsGrayscale(const long double threshold) const {
-  const long double t = threshold * threshold;
-  const OkLab gray(m_a, 0., 0.);
-  return OkLab::SqrDist(gray, *this) <= t;
-}
-
-std::string OkLab::DebugsRGBtoOkLabMats() {
-  std::string out = "Linear RGB to Linear LMS\n";
-  out += OkLab::LinearRGBtoLinearLMS.Debug(2);
-  out += "LMS to OkLab\n";
-  out += OkLab::LMStoLab.Debug(2);
-
-  return out;
-}
-
-std::string OkLab::DebugOkLabtosRGBMats() {
-  std::string out = "OkLab to LMS\n";
-  out += OkLab::LabtoLMS.Debug(2);
-  out += "Linear LMS to Linear RGB\n";
-  out += OkLab::LinearLMStoLinearRGB.Debug(2);
-  return out;
+  else {
+    const OkLab delta = lab1 - lab2;
+    return std::sqrt(delta.GetL() * delta.GetL() + delta.GetA() * delta.GetA() + delta.GetB() * delta.GetB());
+  }
+  return 0.0;
 }

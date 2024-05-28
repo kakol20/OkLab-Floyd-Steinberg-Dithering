@@ -21,11 +21,9 @@ add_executable (OkLabDithering "src/main.h"
     "ext/stb/stb_image_write.h"
     "src/image/Image.cpp"
     "src/other/Log.cpp"
-    "src/maths/Matrix.cpp" 
-    "src/colorSpaces/ColorSpace.h"
-    "src/colorSpaces/sRGB.cpp"
+    "src/colorSpaces/ColorSpace.hpp"
+    "src/colorSpaces/sRGB.hpp"
     "src/colorSpaces/OkLab.cpp"
-    "src/other/Pseudo2DArray.hpp"
     "src/maths/Maths.hpp"
     "src/colorSpaces/OkLCh.cpp")
 
