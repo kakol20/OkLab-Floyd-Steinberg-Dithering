@@ -139,7 +139,7 @@ bool Image::Write(const char* file) {
 }
 
 size_t Image::GetIndex(const int x, const int y) const {
-  if (x < 0 || x >= m_w || y < 0 || y >= m_h) return NAN;
+  if (x < 0 || x >= m_w || y < 0 || y >= m_h) return (size_t)NAN;
   return size_t((x + y * m_w) * m_channels);
 }
 

@@ -4,7 +4,7 @@
 
 class ColorSpace {
 public:
-  ColorSpace(const double a = 0, const double b = 0, const double c = 0) {
+  ColorSpace(const long double a = 0, const long double b = 0, const long double c = 0) {
     m_a = a;
     m_b = b;
     m_c = c;
@@ -29,5 +29,5 @@ public:
   }
 
 protected:
-  double m_a, m_b, m_c;
+  long double m_a, m_b, m_c;
 };
