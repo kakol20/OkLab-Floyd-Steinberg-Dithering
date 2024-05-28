@@ -25,9 +25,12 @@ using json = nlohmann::json;
 
 #include "image/Image.h"
 
-sRGB ClosestPaletteColorRGB(const std::vector<sRGB>& palette, const sRGB& col);
+sRGB ClosestPaletteColorRGB(const std::vector<sRGB>& palette, const sRGB& col, const bool lightMode = false);
 bool GetPalette(const std::string& loc, std::vector<sRGB>& out);
 
 bool GeneratePalette(const std::string& baseFile);
+
+sRGB GetRGBFromImage(const Image& img, const int x, const int y, const bool grayscale = false);
+void SetDataFromRGB(Image& img, const int x, const int y, const sRGB& srgb);
 
 #endif // !MAIN_H
