@@ -90,3 +90,14 @@ bool OkLab::IsInsidesRGB() const {
   sRGB current = OkLab::OkLabtosRGB(*this);
   return current.IsInside();
 }
+
+double OkLab::Distance(const OkLab& lab1, const OkLab& lab2, const bool lightMode) {
+  if (lightMode) {
+    return std::abs(lab1.GetL() - lab2.GetL());
+  }
+  else {
+    const OkLab delta = lab1 - lab2;
+    return std::sqrt(delta.GetL() * delta.GetL() + delta.GetA() * delta.GetA() + delta.GetB() * delta.GetB());
+  }
+  return 0.0;
+}

@@ -24,7 +24,6 @@ add_executable (OkLabDithering "src/main.h"
     "src/colorSpaces/ColorSpace.hpp"
     "src/colorSpaces/sRGB.hpp"
     "src/colorSpaces/OkLab.cpp"
-    "src/other/Pseudo2DArray.hpp"
     "src/maths/Maths.hpp"
     "src/colorSpaces/OkLCh.cpp")
 

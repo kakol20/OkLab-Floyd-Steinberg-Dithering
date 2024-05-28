@@ -28,4 +28,6 @@ public:
   OkLab operator*(const double scalar) const { OkLab out(*this); out *= scalar; return out; };
 
   bool IsInsidesRGB() const;
+
+  static double Distance(const OkLab& lab1, const OkLab& lab2, const bool lightMode = false);
 };
