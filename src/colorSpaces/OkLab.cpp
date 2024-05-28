@@ -54,7 +54,7 @@ sRGB OkLab::OkLabtosRGB(const OkLab& oklab) {
   r2 = r2 <= 0.00313058 ? 12.92 * r2 : (Maths::NRoot(r2, 2.4) * 1.055) - 0.055;
   g2 = g2 <= 0.00313058 ? 12.92 * g2 : (Maths::NRoot(g2, 2.4) * 1.055) - 0.055;
   b2 = b2 <= 0.00313058 ? 12.92 * b2 : (Maths::NRoot(b2, 2.4) * 1.055) - 0.055;
-  return sRGB(r1, g1, b1);
+  return sRGB(r2, g2, b2);
 }
 
 OkLab& OkLab::operator/=(const OkLab& other) {
