@@ -18,6 +18,7 @@ using json = nlohmann::json;
 
 #include "colorSpaces/ColorSpace.hpp"
 #include "colorSpaces/OkLab.h"
+#include "colorSpaces/OkLCh.h"
 #include "colorSpaces/sRGB.hpp"
 #include "maths/Maths.hpp"
 #include "other/Log.h"
@@ -25,6 +26,7 @@ using json = nlohmann::json;
 #include "image/Image.h"
 
 sRGB ClosestPaletteColorRGB(const std::vector<sRGB>& palette, const sRGB& col);
+bool GetPalette(const std::string& loc, std::vector<sRGB>& out);
 
 bool GeneratePalette(const std::string& baseFile);
 

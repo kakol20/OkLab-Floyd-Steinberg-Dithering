@@ -40,6 +40,7 @@ public:
   bool IsInside() const;
 
   std::string Debug(const double maxValue = 1.) const;
+  std::string UintDebug() const;
 
   static sRGB HexTosRGB(const std::string hex);
   std::string sRGBtoHex() const;
@@ -98,7 +99,11 @@ inline bool sRGB::IsInside() const {
 }
 
 inline std::string sRGB::Debug(const double maxValue) const {
-  return std::to_string(m_a * maxValue) + ' ' + std::to_string(m_b * maxValue) + ' ' + std::to_string(m_c * maxValue) + '\n';
+  return std::to_string(m_a * maxValue) + ' ' + std::to_string(m_b * maxValue) + ' ' + std::to_string(m_c * maxValue);
+}
+
+inline std::string sRGB::UintDebug() const {
+  return std::to_string((*this).GetRUInt()) + ' ' + std::to_string((*this).GetGUInt()) + ' ' + std::to_string((*this).GetBUInt());
 }
 
 inline sRGB sRGB::HexTosRGB(const std::string hex) {

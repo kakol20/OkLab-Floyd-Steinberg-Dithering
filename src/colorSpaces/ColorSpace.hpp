@@ -25,7 +25,7 @@ public:
   }
 
   virtual std::string Debug() const {
-    return std::to_string(m_a) + ' ' + std::to_string(m_b) + ' ' + std::to_string(m_c) + '\n';
+    return std::to_string(m_a) + ' ' + std::to_string(m_b) + ' ' + std::to_string(m_c);
   }
 
   ColorSpace& operator/=(const ColorSpace& other);
