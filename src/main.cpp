@@ -3,19 +3,12 @@
 
 #include "main.h"
 
-const long double Maths::Pi = 3.1415926535;
-const long double Maths::Tau = 6.283185307;
-const long double Maths::RadToDeg = 180. / Maths::Pi;
-const long double Maths::DegToRad = Maths::Pi / 180.;
+const double Maths::Pi = 3.1415926535;
+const double Maths::Tau = 6.283185307;
+const double Maths::RadToDeg = 180. / Maths::Pi;
+const double Maths::DegToRad = Maths::Pi / 180.;
 
 int main(int argc, char* argv[]) {
-  OkLab::Initialise();
-
-  Log::StartLine();
-  Log::Write("Conversion Matrices:\n" + OkLab::DebugsRGBtoOkLabMats());
-  Log::Write(OkLab::DebugOkLabtosRGBMats());
-  Log::EndLine();
-
   std::ifstream f("settings.json");
 
   if (f) {
@@ -53,7 +46,7 @@ sRGB ClosestPaletteColorRGB(const std::vector<sRGB>& palette, const sRGB& col) {
 }
 
 OkLab ClosestPaletteColorLAB(const std::vector<OkLab>& palette, const OkLab& lab) {
-  OkLab closest = palette[0];
+  /*OkLab closest = palette[0];
   long double closestDist = OkLab::SqrDist(lab, closest);
 
   for (size_t i = 1; i < palette.size(); i++) {
@@ -64,5 +57,6 @@ OkLab ClosestPaletteColorLAB(const std::vector<OkLab>& palette, const OkLab& lab
       closestDist = dist;
     }
   }
-  return closest;
+  return closest;*/
+  return OkLab();
 }
