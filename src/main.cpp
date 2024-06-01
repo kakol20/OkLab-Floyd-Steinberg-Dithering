@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
   //std::cout << "\nPress enter to exit...\n";
   //std::cin.ignore();
 
-  //GeneratePalette("data/minecraft_map_gs");
+  //GeneratePalette("data/minecraft_map");
 
   std::ifstream f("settings.json");
   if (f) {
