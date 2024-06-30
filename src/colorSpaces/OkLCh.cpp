@@ -125,17 +125,21 @@ OkLCh& OkLCh::operator*=(const  double scalar) {
   return *this;
 }
 
-void OkLCh::Fallback(const  double change) {
-  m_a = std::min(std::max(m_a, 0.), 1.);
-  m_b = m_a == 0. || m_a == 1. ? 0. : m_b;
+void OkLCh::Fallback(const int maxIter) {
+  int iter = 0;
 
-  sRGB current = OkLCh::OkLChtosRGB(*this);
-  while (!current.IsInside()) {
-    m_b -= change;
-    m_b = std::max(m_b, 0.);
+  while (iter < maxIter) {
+    sRGB rgb = OkLCh::OkLChtosRGB(*this);
+    rgb.Clamp();
 
-    if (m_b == 0) break;
-    current = OkLCh::OkLChtosRGB(*this);
+    OkLCh outLCh = OkLCh::sRGBtoOkLCh(rgb);
+
+    m_b = outLCh.GetC();
+    m_c = outLCh.GetH();
+
+    if ((*this).IsInsidesRGB()) break;
+
+    iter++;
   }
 }
 
