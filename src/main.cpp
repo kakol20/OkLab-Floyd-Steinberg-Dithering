@@ -9,9 +9,6 @@ const double Maths::RadToDeg = 180. / Maths::Pi;
 const double Maths::DegToRad = Maths::Pi / 180.;
 
 int main(int argc, char* argv[]) {
-  //std::cout << "\nPress enter to exit...\n";
-  //std::cin.ignore();
-
   //GeneratePalette("data/minecraft_map");
 
   std::ifstream f("settings.json");
@@ -67,9 +64,9 @@ int main(int argc, char* argv[]) {
     if (success) {
       // ----- READ SETTINGS -----
 
-      Log::StartLine();
-      Log::Write("----- SETTINGS -----");
-      Log::EndLine();
+      /*Log::StartLine();
+      Log::Write("----- SETTINGS -----");*/
+      //Log::EndLine();
 
       const std::string inputLoc = settings["input_image"];
       Log::StartLine();
@@ -106,12 +103,16 @@ int main(int argc, char* argv[]) {
 
       // ----- GET PALETTE -----
 
+      //Log::EndLine();
+
       std::vector<sRGB> palette;
       success = success && GetPalette(paletteLoc, palette);
 
       // ----- GET INPUT IMAGE -----
-      Log::StartLine();
+      /*Log::StartLine();
       Log::Write("----- INPUT IMAGE -----");
+      Log::EndLine();*/
+
       Log::EndLine();
 
       Image inputImg;
@@ -129,79 +130,25 @@ int main(int argc, char* argv[]) {
         Log::EndLine();
 
         // ----- MAIN PROCESS -----
+
+        Log::EndLine();
+
+        std::vector<OkLab> pixelsLab;
+        pixelsLab.reserve((size_t)(inputImg.GetWidth() * inputImg.GetHeight()));
+
+        // -- Copy Pixels into vector of OkLab --
         Log::StartLine();
-        Log::Write("----- MAIN PROCESS -----");
+        Log::Write("Copying pixels...");
 
         Log::StartTime();
         for (int y = 0; y < inputImg.GetHeight(); y++) {
           for (int x = 0; x < inputImg.GetWidth(); x++) {
-            const size_t img_index = inputImg.GetIndex(x, y);
-            //const int img_channels = inputImg.GetChannels();
+            const sRGB pixelCol = GetRGBFromImage(inputImg, x, y);
+            pixelsLab.push_back(OkLab::sRGBtoOkLab(pixelCol));
 
-            const sRGB oldpixelRGB = GetRGBFromImage(inputImg, x, y, grayscale);
-
-            const sRGB newpixelRGB = ClosestPaletteColorRGB(palette, oldpixelRGB, dist_l);
-
-            // ----- SET NEW PIXEL COLOUR -----
-       
-            SetDataFromRGB(inputImg, x, y, newpixelRGB);
-
-            // ----- DITHER -----
-
-            if (dither) {
-              const OkLab oldpixelLab = OkLab::sRGBtoOkLab(oldpixelRGB);
-              const OkLab newpixelLab = OkLab::sRGBtoOkLab(newpixelRGB);
-              const OkLab quant_error = oldpixelLab - newpixelLab;
-
-              if (x + 1 < inputImg.GetWidth()) {
-                OkLab qe7_lab = OkLab::sRGBtoOkLab(GetRGBFromImage(inputImg, x + 1, y, grayscale));
-                qe7_lab += quant_error * (7. / 16.);
-
-                OkLCh qe7_lch = OkLCh::OkLabtoOkLCh(qe7_lab);
-                qe7_lch.Fallback();
-
-                sRGB qe7_rgb = OkLCh::OkLChtosRGB(qe7_lch);
-                SetDataFromRGB(inputImg, x + 1, y, qe7_rgb);
-              }
-
-              if (y + 1 < inputImg.GetHeight()) {
-                if (x - 1 >= 0) {
-                  OkLab qe3_lab = OkLab::sRGBtoOkLab(GetRGBFromImage(inputImg, x - 1, y + 1, grayscale));
-                  qe3_lab += quant_error * (3. / 16.);
-
-                  OkLCh qe3_lch = OkLCh::OkLabtoOkLCh(qe3_lab);
-                  qe3_lch.Fallback();
-
-                  sRGB qe3_rgb = OkLCh::OkLChtosRGB(qe3_lch);
-                  SetDataFromRGB(inputImg, x - 1, y + 1, qe3_rgb);
-                }
-
-                OkLab qe5_lab = OkLab::sRGBtoOkLab(GetRGBFromImage(inputImg, x, y + 1, grayscale));
-                qe5_lab += quant_error * (5. / 16.);
-
-                OkLCh qe5_lch = OkLCh::OkLabtoOkLCh(qe5_lab);
-                qe5_lch.Fallback();
-
-                sRGB qe5_rgb = OkLCh::OkLChtosRGB(qe5_lch);
-                SetDataFromRGB(inputImg, x, y + 1, qe5_rgb);
-
-                if (x + 1 < inputImg.GetWidth()) {
-                  OkLab qe1_lab = OkLab::sRGBtoOkLab(GetRGBFromImage(inputImg, x + 1, y + 1, grayscale));
-                  qe1_lab += quant_error * (3. / 16.);
-
-                  OkLCh qe1_lch = OkLCh::OkLabtoOkLCh(qe1_lab);
-                  qe1_lch.Fallback();
-
-                  sRGB qe1_rgb = OkLCh::OkLChtosRGB(qe1_lch);
-                  SetDataFromRGB(inputImg, x + 1, y + 1, qe1_rgb);
-                }
-              }
-            }
-
-            // ----- CHECK TIME -----
-
+            // -- Check Time --
             if (Log::CheckTimeSeconds(5.)) {
-              double progress = double(img_index) / double(inputImg.GetSize());
+              double progress = double(inputImg.GetIndex(x, y)) / double(inputImg.GetSize());
               progress *= 100.;
 
               Log::EndLine();
@@ -215,10 +162,71 @@ int main(int argc, char* argv[]) {
           }
         }
         Log::EndLine();
-        Log::StartLine();
-        Log::Write("--- Finish ---");
         Log::EndLine();
 
+        // -- Start --
+
+        Log::StartLine();
+        Log::Write("Processing...");
+
+        Log::StartTime();
+        for (int y = 0; y < inputImg.GetHeight(); y++) {
+          for (int x = 0; x < inputImg.GetWidth(); x++) {
+            // x + y * m_w
+            //const size_t labI = size_t(x + y * inputImg.GetWidth());
+            const size_t labI = GetIndex(x, y, inputImg.GetWidth());
+
+            const OkLab oldPixelLab = pixelsLab[labI];
+            const OkLab newPixelLab = ClosestPaletteColorLab(palette, oldPixelLab, dist_l);
+
+            // -- Set New Pixel Colour --
+
+            const sRGB newPixelRGB = OkLab::OkLabtosRGB(newPixelLab);
+            SetDataFromRGB(inputImg, x, y, newPixelRGB);
+            pixelsLab[labI] = newPixelLab;
+
+            // -- Dither --
+
+            //const bool manualOverride = true;
+
+            if (dither) {
+              const OkLab quant_error = oldPixelLab - newPixelLab;
+
+              if (x + 1 < inputImg.GetWidth()) {
+                pixelsLab[GetIndex(x + 1, y, inputImg.GetWidth())] += quant_error * (7. / 16.);
+              }
+
+              if (y + 1 < inputImg.GetHeight()) {
+                if (x - 1 >= 0) {
+                  pixelsLab[GetIndex(x - 1, y, inputImg.GetWidth())] += quant_error * (3. / 16.);
+                }
+
+                pixelsLab[GetIndex(x, y + 1, inputImg.GetWidth())] += quant_error * (5. / 16.);
+
+                if (x + 1 < inputImg.GetWidth()) {
+                  pixelsLab[GetIndex(x + 1, y + 1, inputImg.GetWidth())] += quant_error * (1. / 16.);
+                }
+              }
+            }
+
+            // -- Check Time --
+            if (Log::CheckTimeSeconds(5.)) {
+              double progress = double(inputImg.GetIndex(x, y)) / double(inputImg.GetSize());
+              progress *= 100.;
+
+              Log::EndLine();
+              Log::StartLine();
+              Log::Write("  ");
+              Log::Write(std::to_string(progress));
+              Log::Write("%");
+
+              Log::StartTime();
+            }
+          }
+        }
+        Log::EndLine();
+        Log::EndLine();
+        
         inputImg.Write(outputLoc.c_str());
       }
     }
@@ -230,6 +238,9 @@ int main(int argc, char* argv[]) {
   }
 
   Log::Save();
+
+  //std::cout << "\nPress enter to exit...\n";
+  //std::cin.ignore();
   return 0;
 }
 
@@ -252,11 +263,28 @@ sRGB ClosestPaletteColorRGB(const std::vector<sRGB>& palette, const sRGB& col, c
   return palette[closest_index];
 }
 
+OkLab ClosestPaletteColorLab(const std::vector<sRGB>& palette, const OkLab& col, const bool lightMode) {
+  size_t closest_index = 0;
+  double closestDist = OkLab::Distance(col, OkLab::sRGBtoOkLab(palette[closest_index]), lightMode);
+
+  for (size_t i = 1; i < palette.size(); i++) {
+    const OkLab currLab = OkLab::sRGBtoOkLab(palette[i]);
+    const double currDist = OkLab::Distance(col, currLab, lightMode);
+
+    if (currDist < closestDist) {
+      closest_index = i;
+      closestDist = currDist;
+    }
+  }
+
+  return OkLab::sRGBtoOkLab(palette[closest_index]);
+}
+
 bool GetPalette(const std::string& loc, std::vector<sRGB>& out) {
   std::fstream p(loc);
   if (p) {
-    Log::StartLine();
-    Log::Write("----- COLOURS -----");
+    /*Log::StartLine();
+    Log::Write("----- COLOURS -----");*/
     Log::EndLine();
 
     std::string hex;
@@ -378,4 +406,9 @@ void SetDataFromRGB(Image& img, const int x, const int y, const sRGB& srgb) {
     img.SetData(index + 1, g);
     img.SetData(index + 2, b);
   }
+}
+
+size_t GetIndex(const int x, const int y, const int width, const int channels) {
+  // size_t((x + y * m_w) * m_channels)
+  return size_t((x + y * width) * channels);
 }
