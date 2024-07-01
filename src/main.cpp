@@ -118,6 +118,16 @@ int main(int argc, char* argv[]) {
       success = success && inputImg.Read(inputLoc.c_str());
 
       if (success) {
+        Log::StartLine();
+        Log::Write("Width: ");
+        Log::Write(std::to_string(inputImg.GetWidth()));
+        Log::EndLine();
+
+        Log::StartLine();
+        Log::Write("Height: ");
+        Log::Write(std::to_string(inputImg.GetHeight()));
+        Log::EndLine();
+
         // ----- MAIN PROCESS -----
         Log::StartLine();
         Log::Write("----- MAIN PROCESS -----");
