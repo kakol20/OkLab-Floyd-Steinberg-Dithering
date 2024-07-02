@@ -144,7 +144,8 @@ int main(int argc, char* argv[]) {
         for (int y = 0; y < inputImg.GetHeight(); y++) {
           for (int x = 0; x < inputImg.GetWidth(); x++) {
             const sRGB pixelCol = GetRGBFromImage(inputImg, x, y);
-            pixelsLab.push_back(OkLab::sRGBtoOkLab(pixelCol));
+            const OkLab mult = OkLab(1., grayscale ? 0. : 1., grayscale ? 0. : 1.);
+            pixelsLab.push_back(OkLab::sRGBtoOkLab(pixelCol) * mult);
 
             // -- Check Time --
             if (Log::CheckTimeSeconds(5.)) {
