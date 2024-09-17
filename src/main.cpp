@@ -53,8 +53,8 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
-	Log::WriteOneLine("Image: " + imgLoc);
-	Log::WriteOneLine("JSON: " + jsonLoc);
+	Log::WriteOneLine("Image:   " + imgLoc);
+	Log::WriteOneLine("JSON:    " + jsonLoc);
 	Log::WriteOneLine("Palette: " + paletteLoc);
 	Log::EndLine();
 

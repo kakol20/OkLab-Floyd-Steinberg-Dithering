@@ -10,11 +10,14 @@ OkLCh OkLCh::sRGBtoOkLCh(const sRGB& srgb) {
 	if (l1 == 1. && c1 == 1. && h1 == 1.) return OkLCh(1., 0., 0.);
 	if (l1 == 0. && c1 == 0. && h1 == 0.) return OkLCh(0., 0., 0.);
 
+	const double scalar = 387916. / 30017.;
+	const double limit = 11. / 280.;
+
 	if (l1 == c1 && l1 == h1) {
 		// if graycale - can skip some conversions
 
 		// to Linear RGB
-		l1 = l1 <= 0.04045 ? l1 / 12.92 : std::pow((l1 + 0.055) / 1.055, 2.4);
+		l1 = l1 <= limit ? l1 / scalar : std::pow((l1 + 0.055) / 1.055, 2.4);
 
 		// to LMS - can skip "to Linear LMS" conversion
 		l1 = std::cbrt(l1);
@@ -23,14 +26,14 @@ OkLCh OkLCh::sRGBtoOkLCh(const sRGB& srgb) {
 		return OkLCh(l1, 0., 0.);
 	} else {
 		// to Linear RGB
-		l1 = l1 <= 0.04045 ? l1 / 12.92 : std::pow((l1 + 0.055) / 1.055, 2.4);
-		c1 = c1 <= 0.04045 ? c1 / 12.92 : std::pow((c1 + 0.055) / 1.055, 2.4);
-		h1 = h1 <= 0.04045 ? h1 / 12.92 : std::pow((h1 + 0.055) / 1.055, 2.4);
+		l1 = l1 <= limit ? l1 / scalar : std::pow((l1 + 0.055) / 1.055, 2.4);
+		c1 = c1 <= limit ? c1 / scalar : std::pow((c1 + 0.055) / 1.055, 2.4);
+		h1 = h1 <= limit ? h1 / scalar : std::pow((h1 + 0.055) / 1.055, 2.4);
 
 		// to Linear LMS
-		double l2 = 0.4122214708 * l1 + 0.5363325363 * c1 + 0.0514459929 * h1;
-		double c2 = 0.2119034982 * l1 + 0.6806995451 * c1 + 0.1073969566 * h1;
-		double h2 = 0.0883024619 * l1 + 0.2817188376 * c1 + 0.6299787005 * h1;
+		double l2 = 0.412221470800 * l1 + 0.536332536300 * c1 + 0.051445992900 * h1;
+		double c2 = 0.211903498234 * l1 + 0.680699545133 * c1 + 0.107396956633 * h1;
+		double h2 = 0.088302461900 * l1 + 0.281718837600 * c1 + 0.629978700500 * h1;
 
 		// to LMS
 		//val.Cbrt()
@@ -39,9 +42,9 @@ OkLCh OkLCh::sRGBtoOkLCh(const sRGB& srgb) {
 		h1 = std::cbrt(h2);
 
 		// to OkLab
-		l2 = 0.2104542553 * l1 + 0.7936177850 * c1 - 0.0040720468 * h1;
-		c2 = 1.9779984951 * l1 - 2.4285922050 * c1 + 0.4505937099 * h1;
-		h2 = 0.0259040371 * l1 + 0.7827717662 * c1 - 0.8086757660 * h1;
+		l2 = 0.210454257467 * l1 + 0.793617787167 * c1 - 0.004072044634 * h1;
+		c2 = 1.977998495100 * l1 - 2.428592205000 * c1 + 0.450593709900 * h1;
+		h2 = 0.025904024666 * l1 + 0.782771753767 * c1 - 0.808675778433 * h1;
 
 		// to OkLCh
 		l1 = l2;
@@ -57,6 +60,9 @@ sRGB OkLCh::OkLChtosRGB(const OkLCh& oklch) {
 	if (oklch.GetL() == 1.) return sRGB(1., 1., 1.);
 	if (oklch.GetL() == 0.) return sRGB(0., 0., 0.);
 
+	const double scalar = 387916. / 30017.;
+	const double limit = 285. / 93752.;
+
 	if (oklch.GetC() == 0.) {
 		// if graycale - can skip some conversions
 
@@ -67,7 +73,7 @@ sRGB OkLCh::OkLChtosRGB(const OkLCh& oklch) {
 		v = v * v * v;
 
 		// to sRGB - can skip "to Linear RGB" conversion
-		v = v <= 0.00313058 ? 12.92 * v : (Maths::NRoot(v, 2.4) * 1.055) - 0.055;
+		v = v <= limit ? scalar * v : (Maths::NRoot(v, 2.4) * 1.055) - 0.055;
 
 		return sRGB(v, v, v);
 	} else {
@@ -81,9 +87,9 @@ sRGB OkLCh::OkLChtosRGB(const OkLCh& oklch) {
 		double b2 = g1 * std::sin(b1);
 
 		// to LMS
-		r1 = r2 + 0.3963377774 * g2 + 0.2158037573 * b2;
-		g1 = r2 - 0.1055613458 * g2 - 0.0638541728 * b2;
-		b1 = r2 - 0.0894841775 * g2 - 1.2914855480 * b2;
+		r1 = r2 + 0.396337792278 * g2 + 0.215803757471 * b2;
+		g1 = r2 - 0.105561342920 * g2 - 0.063854171399 * b2;
+		b1 = r2 - 0.089484185764 * g2 - 1.291485517099 * b2;
 
 		// to Linear LMS
 		r2 = r1 * r1 * r1;
@@ -91,14 +97,14 @@ sRGB OkLCh::OkLChtosRGB(const OkLCh& oklch) {
 		b2 = b1 * b1 * b1;
 
 		// to Linear RGB
-		r1 = 4.0767416621 * r2 - 3.3077115913 * g2 + 0.2309699292 * b2;
-		g1 = -1.2684380046 * r2 + 2.6097574011 * g2 - 0.3413193965 * b2;
-		b1 = -0.0041960863 * r2 - 0.7034186147 * g2 + 1.7076147010 * b2;
+		r1 =  4.076741661667 * r2 - 3.307711590572 * g2 + 0.230969928905 * b2;
+		g1 = -1.268438004344 * r2 + 2.609757400792 * g2 - 0.341319396448 * b2;
+		b1 = -0.004196086474 * r2 - 0.703418614494 * g2 + 1.707614700968 * b2;
 
 		// to sRGB
-		r1 = r1 <= 0.00313058 ? 12.92 * r1 : (Maths::NRoot(r1, 2.4) * 1.055) - 0.055;
-		g1 = g1 <= 0.00313058 ? 12.92 * g1 : (Maths::NRoot(g1, 2.4) * 1.055) - 0.055;
-		b1 = b1 <= 0.00313058 ? 12.92 * b1 : (Maths::NRoot(b1, 2.4) * 1.055) - 0.055;
+		r1 = r1 <= limit ? scalar * r1 : (Maths::NRoot(r1, 2.4) * 1.055) - 0.055;
+		g1 = g1 <= limit ? scalar * g1 : (Maths::NRoot(g1, 2.4) * 1.055) - 0.055;
+		b1 = b1 <= limit ? scalar * b1 : (Maths::NRoot(b1, 2.4) * 1.055) - 0.055;
 
 		return sRGB(r1, g1, b1);
 	}
