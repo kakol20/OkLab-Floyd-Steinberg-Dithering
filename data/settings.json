@@ -1,5 +1,5 @@
 {
-  "dither": true,
-  "grayscale": true,
-  "dist_lightness": false
+	"dither": true,
+	"grayscale": true,
+	"dist_lightness": false
 }
