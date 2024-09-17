@@ -1,7 +1,4 @@
-﻿// main.cpp : Defines the entry point for the application.
-//
-
-#include "main.h"
+﻿#include "main.h"
 
 const double Maths::Pi = 3.1415926535;
 const double Maths::Tau = 6.283185307;
@@ -9,16 +6,58 @@ const double Maths::RadToDeg = 180. / Maths::Pi;
 const double Maths::DegToRad = Maths::Pi / 180.;
 
 int main(int argc, char* argv[]) {
-	if (argc <= 1) {
+	if (argc < 4) {
 		Log::WriteOneLine("Drag and drop an image file, a .palette file and a .json file");
-		Log::WriteOneLine("Note only PNG, JPG, BMP or TGA image files are supported");
+		Log::WriteOneLine("Note: Only PNG, JPG, BMP or TGA image files are supported");
 
+		Log::Save();
 		std::cout << "\nPress enter to exit...\n";
 		std::cin.ignore();
+		return 0;
 	}
 
-	Log::Save();
+	std::string imgLoc;
+	bool haveImg = false;
 
+	std::string jsonLoc;
+	bool haveJson = false;
+
+	std::string paletteLoc;
+	bool havePalette = false;
+
+	// get files
+	for (int i = 1; i < argc; i++) {
+		std::string fileExtension = GetFileExtension(argv[i]);
+
+		if (fileExtension == "json") {
+			jsonLoc = argv[i];
+			haveJson = true;
+		} else if (fileExtension == "palette") {
+			paletteLoc = argv[i];
+			havePalette = true;
+		} else if (fileExtension == "png" || fileExtension == "jpg" || fileExtension == "bmp" || fileExtension == "tga") {
+			imgLoc = argv[i];
+			haveImg = true;
+		}
+	}
+
+	// check if have all files
+	if (!(haveImg && haveJson && havePalette)) {
+		if (!haveImg) Log::WriteOneLine("Image file not found");
+		if (!haveJson) Log::WriteOneLine("JSON file not found");
+		if (!havePalette) Log::WriteOneLine("Palette file not found");
+
+		Log::Save();
+		std::cout << "\nPress enter to exit...\n";
+		std::cin.ignore();
+		return 0;
+	}
+
+	Log::WriteOneLine("Image: " + imgLoc);
+	Log::WriteOneLine("JSON: " + jsonLoc);
+	Log::WriteOneLine("Palette: " + paletteLoc);
+
+	Log::Save();
 	return 0;
 }
 
@@ -184,4 +223,14 @@ void SetDataFromRGB(Image& img, const int x, const int y, const sRGB& srgb) {
 size_t GetIndex(const int x, const int y, const int width, const int channels) {
 	// size_t((x + y * m_w) * m_channels)
 	return size_t((x + y * width) * channels);
+}
+
+std::string GetFileExtension(const std::string loc) {
+	std::stringstream locStream(loc);
+	std::string locSeg;
+	std::vector<std::string> locSegList;
+
+	while (std::getline(locStream, locSeg, '.')) locSegList.push_back(locSeg);
+
+	return locSegList.back();
 }
