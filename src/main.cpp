@@ -1,7 +1,4 @@
-﻿// main.cpp : Defines the entry point for the application.
-//
-
-#include "main.h"
+﻿#include "main.h"
 
 const double Maths::Pi = 3.1415926535;
 const double Maths::Tau = 6.283185307;
@@ -9,407 +6,401 @@ const double Maths::RadToDeg = 180. / Maths::Pi;
 const double Maths::DegToRad = Maths::Pi / 180.;
 
 int main(int argc, char* argv[]) {
-  //GeneratePalette("data/minecraft_map");
+	if (argc < 4) {
+		Log::WriteOneLine("Drag and drop an image file, a .palette file and a .json file");
+		Log::WriteOneLine("Note: Only PNG, JPG, BMP or TGA image files are supported");
 
-  std::ifstream f("settings.json");
-  if (f) {
-    json settings = json::parse(f);
+		Log::Save();
+		std::cout << "\nPress enter to exit...\n";
+		std::cin.ignore();
+		return 0;
+	}
 
-    // ----- CHECK IF SETTING EXISTS -----
+	std::string imgLoc;
+	bool haveImg = false;
 
-    bool success = true;
+	std::string jsonLoc;
+	bool haveJson = false;
 
-    if (!settings.contains("input_image")) {
-      Log::StartLine();
-      Log::Write("input setting not found");
-      Log::EndLine();
-      success = false;
-    }
+	std::string paletteLoc;
+	bool havePalette = false;
 
-    if (!settings.contains("output_image")) {
-      Log::StartLine();
-      Log::Write("output_image setting not found");
-      Log::EndLine();
-      success = false;
-    }
+	// ----- GET FILES -----
 
-    if (!settings.contains("palette")) {
-      Log::StartLine();
-      Log::Write("palette setting not found");
-      Log::EndLine();
-      success = false;
-    }
+	for (int i = 1; i < argc; i++) {
+		std::string fileExtension = GetFileExtension(argv[i]);
 
-    if (!settings.contains("dither")) {
-      Log::StartLine();
-      Log::Write("dither setting not found");
-      Log::EndLine();
-      success = false;
-    }
+		if (fileExtension == "json") {
+			jsonLoc = argv[i];
+			haveJson = true;
+		} else if (fileExtension == "palette") {
+			paletteLoc = argv[i];
+			havePalette = true;
+		} else if (fileExtension == "png" || fileExtension == "jpg" || fileExtension == "bmp" || fileExtension == "tga") {
+			imgLoc = argv[i];
+			haveImg = true;
+		}
+	}
 
-    if (!settings.contains("grayscale")) {
-      Log::StartLine();
-      Log::Write("grayscale setting not found");
-      Log::EndLine();
-      success = false;
-    }
+	// ----- CHECK IF HAVE ALL FILES -----
 
-    if (!settings.contains("dist_lightness")) {
-      Log::StartLine();
-      Log::Write("dist_lightness setting not found");
-      Log::EndLine();
-      success = false;
-    }
+	if (!(haveImg && haveJson && havePalette)) {
+		if (!haveImg) Log::WriteOneLine("Image file not found");
+		if (!haveJson) Log::WriteOneLine("JSON file not found");
+		if (!havePalette) Log::WriteOneLine("Palette file not found");
 
-    if (success) {
-      // ----- READ SETTINGS -----
+		Log::Save();
+		std::cout << "\nPress enter to exit...\n";
+		std::cin.ignore();
+		return 0;
+	}
 
-      /*Log::StartLine();
-      Log::Write("----- SETTINGS -----");*/
-      //Log::EndLine();
+	Log::WriteOneLine("Image:   " + imgLoc);
+	Log::WriteOneLine("JSON:    " + jsonLoc);
+	Log::WriteOneLine("Palette: " + paletteLoc);
+	Log::EndLine();
 
-      const std::string inputLoc = settings["input_image"];
-      Log::StartLine();
-      Log::Write("Input: " + inputLoc);
-      Log::EndLine();
+	// ----- READ FILES -----
 
-      const std::string outputLoc = settings["output_image"];
-      Log::StartLine();
-      Log::Write("Output: " + outputLoc);
-      Log::EndLine();
+	Image inputImg;
+	if (!inputImg.Read(imgLoc.c_str())) {
+		Log::Save();
+		std::cout << "\nPress enter to exit...\n";
+		std::cin.ignore();
+		return 0;
+	}
+	Log::WriteOneLine("Width: " + std::to_string(inputImg.GetWidth()));
+	Log::WriteOneLine("Height: " + std::to_string(inputImg.GetHeight()));
 
-      const std::string paletteLoc = settings["palette"];
-      Log::StartLine();
-      Log::Write("Palette: " + paletteLoc);
-      Log::EndLine();
+	std::ifstream f(jsonLoc);
+	if (!(f)) {
+		Log::WriteOneLine("Read failed: " + jsonLoc);
+		Log::Save();
+		std::cout << "\nPress enter to exit...\n";
+		std::cin.ignore();
+		return 0;
+	}
+	Log::EndLine();
 
-      const bool dither = settings["dither"];
-      Log::StartLine();
-      Log::Write("Dither: ");
-      Log::Write(dither ? "TRUE" : "FALSE");
-      Log::EndLine();
+	json settings = json::parse(f);
 
-      const bool grayscale = settings["grayscale"];
-      Log::StartLine();
-      Log::Write("Process As Grayscale: ");
-      Log::Write(grayscale ? "TRUE" : "FALSE");
-      Log::EndLine();
+	const bool haveDither = settings.contains("dither");
+	const bool haveGrayscale = settings.contains("grayscale");
+	const bool haveDist_lightness = settings.contains("dist_lightness");
 
-      const bool dist_l = settings["dist_lightness"];
-      Log::StartLine();
-      Log::Write("Use Lightness As Distance: ");
-      Log::Write(dist_l ? "TRUE" : "FALSE");
-      Log::EndLine();
+	if (!(haveDither && haveGrayscale && haveDist_lightness)) {
+		if (!haveDither) Log::WriteOneLine("JSON setting not found: dither");
+		if (!haveGrayscale) Log::WriteOneLine("JSON setting not found: grayscale");
+		if (!haveDist_lightness) Log::WriteOneLine("JSON setting not found: dist_lightness");
 
-      // ----- GET PALETTE -----
+		Log::Save();
+		std::cout << "\nPress enter to exit...\n";
+		std::cin.ignore();
+		return 0;
+	}
 
-      //Log::EndLine();
+	const bool dither = settings["dither"];
+	const bool grayscale = settings["grayscale"];
+	const bool dist_lightness = settings["dist_lightness"];
 
-      std::vector<sRGB> palette;
-      success = success && GetPalette(paletteLoc, palette);
+	Log::WriteOneLine("Dither: " + (std::string)(dither ? "TRUE" : "FALSE"));
+	Log::WriteOneLine("Process As Grayscale: " + (std::string)(grayscale ? "TRUE" : "FALSE"));
+	Log::WriteOneLine("Use Lightness As Distance: " + (std::string)(dist_lightness ? "TRUE" : "FALSE"));
+	//Log::EndLine();
 
-      // ----- GET INPUT IMAGE -----
-      /*Log::StartLine();
-      Log::Write("----- INPUT IMAGE -----");
-      Log::EndLine();*/
+	std::vector<sRGB> palette;
+	if (!GetPalette(paletteLoc, palette)) {
+		Log::Save();
+		std::cout << "\nPress enter to exit...\n";
+		std::cin.ignore();
+		return 0;
+	}
 
-      Log::EndLine();
+	// ----- MAIN PROCESS -----
 
-      Image inputImg;
-      success = success && inputImg.Read(inputLoc.c_str());
+	std::vector<OkLab> pixelsLab;
+	pixelsLab.reserve((size_t)(inputImg.GetWidth() * inputImg.GetHeight()));
 
-      if (success) {
-        Log::StartLine();
-        Log::Write("Width: ");
-        Log::Write(std::to_string(inputImg.GetWidth()));
-        Log::EndLine();
+	// -- Copy Pixels into vector of OkLab --
 
-        Log::StartLine();
-        Log::Write("Height: ");
-        Log::Write(std::to_string(inputImg.GetHeight()));
-        Log::EndLine();
+	Log::StartLine();
+	Log::Write("Copying pixels...");
 
-        // ----- MAIN PROCESS -----
+	Log::StartTime();
+	for (int y = 0; y < inputImg.GetHeight(); y++) {
+		for (int x = 0; x < inputImg.GetWidth(); x++) {
+			const sRGB pixelCol = GetRGBFromImage(inputImg, x, y);
+			const OkLab mult = OkLab(1., grayscale ? 0. : 1., grayscale ? 0. : 1.);
+			pixelsLab.push_back(OkLab::sRGBtoOkLab(pixelCol) * mult);
 
-        Log::EndLine();
+			// -- Check Time --
+			if (Log::CheckTimeSeconds(5.)) {
+				double progress = double(inputImg.GetIndex(x, y)) / double(inputImg.GetSize());
+				progress *= 100.;
 
-        std::vector<OkLab> pixelsLab;
-        pixelsLab.reserve((size_t)(inputImg.GetWidth() * inputImg.GetHeight()));
+				Log::EndLine();
+				Log::StartLine();
+				Log::Write("  ");
+				Log::Write(std::to_string(progress));
+				Log::Write("%");
 
-        // -- Copy Pixels into vector of OkLab --
-        Log::StartLine();
-        Log::Write("Copying pixels...");
+				Log::StartTime();
+			}
+		}
+	}
+	Log::EndLine();
+	Log::EndLine();
 
-        Log::StartTime();
-        for (int y = 0; y < inputImg.GetHeight(); y++) {
-          for (int x = 0; x < inputImg.GetWidth(); x++) {
-            const sRGB pixelCol = GetRGBFromImage(inputImg, x, y);
-            const OkLab mult = OkLab(1., grayscale ? 0. : 1., grayscale ? 0. : 1.);
-            pixelsLab.push_back(OkLab::sRGBtoOkLab(pixelCol) * mult);
+	// -- Start --
 
-            // -- Check Time --
-            if (Log::CheckTimeSeconds(5.)) {
-              double progress = double(inputImg.GetIndex(x, y)) / double(inputImg.GetSize());
-              progress *= 100.;
+	Log::StartLine();
+	Log::Write("Processing...");
 
-              Log::EndLine();
-              Log::StartLine();
-              Log::Write("  ");
-              Log::Write(std::to_string(progress));
-              Log::Write("%");
+	Log::StartTime();
+	for (int y = 0; y < inputImg.GetHeight(); y++) {
+		for (int x = 0; x < inputImg.GetWidth(); x++) {
+			const size_t labI = GetIndex(x, y, inputImg.GetWidth());
 
-              Log::StartTime();
-            }
-          }
-        }
-        Log::EndLine();
-        Log::EndLine();
+			const OkLab oldPixelLab = pixelsLab[labI];
+			const OkLab newPixelLab = ClosestPaletteColorLab(palette, oldPixelLab, dist_lightness);
 
-        // -- Start --
+			// -- Set New Pixel Colour --
 
-        Log::StartLine();
-        Log::Write("Processing...");
+			const sRGB newPixelRGB = OkLab::OkLabtosRGB(newPixelLab);
+			SetDataFromRGB(inputImg, x, y, newPixelRGB);
+			pixelsLab[labI] = newPixelLab;
 
-        Log::StartTime();
-        for (int y = 0; y < inputImg.GetHeight(); y++) {
-          for (int x = 0; x < inputImg.GetWidth(); x++) {
-            // x + y * m_w
-            //const size_t labI = size_t(x + y * inputImg.GetWidth());
-            const size_t labI = GetIndex(x, y, inputImg.GetWidth());
+			// -- Dither --
 
-            const OkLab oldPixelLab = pixelsLab[labI];
-            const OkLab newPixelLab = ClosestPaletteColorLab(palette, oldPixelLab, dist_l);
+			if (dither) {
+				const OkLab quant_error = oldPixelLab - newPixelLab;
 
-            // -- Set New Pixel Colour --
+				if (x + 1 < inputImg.GetWidth()) {
+					pixelsLab[GetIndex(x + 1, y, inputImg.GetWidth())] += quant_error * (7. / 16.);
+				}
 
-            const sRGB newPixelRGB = OkLab::OkLabtosRGB(newPixelLab);
-            SetDataFromRGB(inputImg, x, y, newPixelRGB);
-            pixelsLab[labI] = newPixelLab;
+				if (y + 1 < inputImg.GetHeight()) {
+					if (x - 1 >= 0) {
+						pixelsLab[GetIndex(x - 1, y, inputImg.GetWidth())] += quant_error * (3. / 16.);
+					}
 
-            // -- Dither --
+					pixelsLab[GetIndex(x, y + 1, inputImg.GetWidth())] += quant_error * (5. / 16.);
 
-            //const bool manualOverride = true;
+					if (x + 1 < inputImg.GetWidth()) {
+						pixelsLab[GetIndex(x + 1, y + 1, inputImg.GetWidth())] += quant_error * (1. / 16.);
+					}
+				}
+			}
 
-            if (dither) {
-              const OkLab quant_error = oldPixelLab - newPixelLab;
+			// -- Check Time --
 
-              if (x + 1 < inputImg.GetWidth()) {
-                pixelsLab[GetIndex(x + 1, y, inputImg.GetWidth())] += quant_error * (7. / 16.);
-              }
+			if (Log::CheckTimeSeconds(5.)) {
+				double progress = double(inputImg.GetIndex(x, y)) / double(inputImg.GetSize());
+				progress *= 100.;
 
-              if (y + 1 < inputImg.GetHeight()) {
-                if (x - 1 >= 0) {
-                  pixelsLab[GetIndex(x - 1, y, inputImg.GetWidth())] += quant_error * (3. / 16.);
-                }
+				Log::EndLine();
+				Log::StartLine();
+				Log::Write("  ");
+				Log::Write(std::to_string(progress));
+				Log::Write("%");
 
-                pixelsLab[GetIndex(x, y + 1, inputImg.GetWidth())] += quant_error * (5. / 16.);
+				Log::StartTime();
+			}
+		}
+	}
+	Log::EndLine();
+	Log::EndLine();
 
-                if (x + 1 < inputImg.GetWidth()) {
-                  pixelsLab[GetIndex(x + 1, y + 1, inputImg.GetWidth())] += quant_error * (1. / 16.);
-                }
-              }
-            }
+	const std::string outLoc = GetFileNoExtension(imgLoc) + "_dithered.png";
+	inputImg.Write(outLoc.c_str());
 
-            // -- Check Time --
-            if (Log::CheckTimeSeconds(5.)) {
-              double progress = double(inputImg.GetIndex(x, y)) / double(inputImg.GetSize());
-              progress *= 100.;
-
-              Log::EndLine();
-              Log::StartLine();
-              Log::Write("  ");
-              Log::Write(std::to_string(progress));
-              Log::Write("%");
-
-              Log::StartTime();
-            }
-          }
-        }
-        Log::EndLine();
-        Log::EndLine();
-        
-        inputImg.Write(outputLoc.c_str());
-      }
-    }
-  }
-  else {
-    Log::StartLine();
-    Log::Write("Failed to read: settings.json");
-    Log::EndLine();
-  }
-
-  Log::Save();
-
-  //std::cout << "\nPress enter to exit...\n";
-  //std::cin.ignore();
-  return 0;
+	Log::Save();
+	return 0;
 }
 
 sRGB ClosestPaletteColorRGB(const std::vector<sRGB>& palette, const sRGB& col, const bool lightMode) {
-  const OkLab col_lab = OkLab::sRGBtoOkLab(col);
+	const OkLab col_lab = OkLab::sRGBtoOkLab(col);
 
-  size_t closest_index = 0;
-  double closestDist = OkLab::Distance(col_lab, OkLab::sRGBtoOkLab(palette[closest_index]), lightMode);
+	size_t closest_index = 0;
+	double closestDist = OkLab::Distance(col_lab, OkLab::sRGBtoOkLab(palette[closest_index]), lightMode);
 
-  for (size_t i = 1; i < palette.size(); i++) {
-    const OkLab currLab = OkLab::sRGBtoOkLab(palette[i]);
-    const double currDist = OkLab::Distance(col_lab, currLab, lightMode);
+	for (size_t i = 1; i < palette.size(); i++) {
+		const OkLab currLab = OkLab::sRGBtoOkLab(palette[i]);
+		const double currDist = OkLab::Distance(col_lab, currLab, lightMode);
 
-    if (currDist < closestDist) {
-      closest_index = i;
-      closestDist = currDist;
-    }
-  }
+		if (currDist < closestDist) {
+			closest_index = i;
+			closestDist = currDist;
+		}
+	}
 
-  return palette[closest_index];
+	return palette[closest_index];
 }
 
 OkLab ClosestPaletteColorLab(const std::vector<sRGB>& palette, const OkLab& col, const bool lightMode) {
-  size_t closest_index = 0;
-  double closestDist = OkLab::Distance(col, OkLab::sRGBtoOkLab(palette[closest_index]), lightMode);
+	size_t closest_index = 0;
+	double closestDist = OkLab::Distance(col, OkLab::sRGBtoOkLab(palette[closest_index]), lightMode);
 
-  for (size_t i = 1; i < palette.size(); i++) {
-    const OkLab currLab = OkLab::sRGBtoOkLab(palette[i]);
-    const double currDist = OkLab::Distance(col, currLab, lightMode);
+	for (size_t i = 1; i < palette.size(); i++) {
+		const OkLab currLab = OkLab::sRGBtoOkLab(palette[i]);
+		const double currDist = OkLab::Distance(col, currLab, lightMode);
 
-    if (currDist < closestDist) {
-      closest_index = i;
-      closestDist = currDist;
-    }
-  }
+		if (currDist < closestDist) {
+			closest_index = i;
+			closestDist = currDist;
+		}
+	}
 
-  return OkLab::sRGBtoOkLab(palette[closest_index]);
+	return OkLab::sRGBtoOkLab(palette[closest_index]);
 }
 
 bool GetPalette(const std::string& loc, std::vector<sRGB>& out) {
-  std::fstream p(loc);
-  if (p) {
-    /*Log::StartLine();
-    Log::Write("----- COLOURS -----");*/
-    Log::EndLine();
+	std::fstream p(loc);
+	if (p) {
+		/*Log::StartLine();
+		Log::Write("----- COLOURS -----");*/
+		Log::EndLine();
 
-    std::string hex;
-    while (std::getline(p, hex)) {
-      const sRGB rgb = sRGB::HexTosRGB(hex);
-      const OkLab lab = OkLab::sRGBtoOkLab(rgb);
-      const OkLCh lch = OkLCh::OkLabtoOkLCh(lab);
+		std::string hex;
+		while (std::getline(p, hex)) {
+			const sRGB rgb = sRGB::HexTosRGB(hex);
+			const OkLab lab = OkLab::sRGBtoOkLab(rgb);
+			const OkLCh lch = OkLCh::OkLabtoOkLCh(lab);
 
-      out.push_back(rgb);
+			out.push_back(rgb);
 
-      Log::StartLine();
-      Log::Write("#");
-      Log::Write(hex);
-      Log::Write(" --- rgb(");
-      Log::Write(rgb.UintDebug());
-      Log::Write(") --- oklab(");
-      Log::Write(lab.Debug());
-      Log::Write(") --- oklch(");
-      Log::Write(lch.Debug());
-      Log::Write(")");
-      Log::EndLine();
-    }
+			std::string hexOut = "#" + hex;
+			std::string rgbOut = "rgb(" + rgb.UintDebug() + ")";
+			std::string labOut = "oklab(" + lab.Debug() + ")";
+			std::string lchOut = "oklch(" + lch.Debug() + ")";
 
-    return true;
-  }
-  else {
-    Log::StartLine();
-    Log::Write(loc);
-    Log::Write(" not found");
-    Log::EndLine();
+			Log::WriteOneLine(hexOut + " - " + rgbOut + " - " + labOut + " - " + lchOut);
+		}
 
-    p.close();
-    return false;
-  }
+		Log::WriteOneLine("Read success: " + loc);
+
+		return true;
+	} else {
+		Log::StartLine();
+		Log::Write("Read failed: ");
+		Log::Write(loc);
+		Log::EndLine();
+
+		p.close();
+		return false;
+	}
 }
 
 bool GeneratePalette(const std::string& baseFile) {
-  const std::string baseFileLoc = baseFile + "_b.palette";
-  const std::string flatFileLoc = baseFile + "_f.palette";
-  const std::string stairFileLoc = baseFile + "_sc.palette";
+	const std::string baseFileLoc = baseFile + "_b.palette";
+	const std::string flatFileLoc = baseFile + "_f.palette";
+	const std::string stairFileLoc = baseFile + "_sc.palette";
 
-  std::fstream bFile(baseFileLoc);
+	std::fstream bFile(baseFileLoc);
 
-  if (bFile) {
-    Log::StartLine();
-    Log::Write(baseFileLoc);
-    Log::Write(" opened");
-    Log::EndLine();
+	if (bFile) {
+		Log::StartLine();
+		Log::Write(baseFileLoc);
+		Log::Write(" opened");
+		Log::EndLine();
 
-    std::fstream fFile;
-    fFile.open(flatFileLoc, std::ios_base::out);
+		std::fstream fFile;
+		fFile.open(flatFileLoc, std::ios_base::out);
 
-    std::fstream scFile;
-    scFile.open(stairFileLoc, std::ios_base::out);
+		std::fstream scFile;
+		scFile.open(stairFileLoc, std::ios_base::out);
 
-    std::string line;
-    while (std::getline(bFile, line)) {
-      const sRGB high = sRGB::HexTosRGB(line);
-      const sRGB low = high * 0.71;
-      const sRGB mid = high * 0.86;
+		std::string line;
+		while (std::getline(bFile, line)) {
+			const sRGB high = sRGB::HexTosRGB(line);
+			const sRGB low = high * 0.71;
+			const sRGB mid = high * 0.86;
 
-      fFile << mid.sRGBtoHex() + "\n";
+			fFile << mid.sRGBtoHex() + "\n";
 
-      scFile << low.sRGBtoHex() + "\n" + mid.sRGBtoHex() + "\n" + high.sRGBtoHex() + "\n";
-    }
+			scFile << low.sRGBtoHex() + "\n" + mid.sRGBtoHex() + "\n" + high.sRGBtoHex() + "\n";
+		}
 
-    fFile.close();
-    scFile.close();
-  }
-  else {
-    Log::StartLine();
-    Log::Write(baseFileLoc);
-    Log::Write(" not found");
-    Log::EndLine();
-  }
-  bFile.close();
+		fFile.close();
+		scFile.close();
+	} else {
+		Log::StartLine();
+		Log::Write(baseFileLoc);
+		Log::Write(" not found");
+		Log::EndLine();
+	}
+	bFile.close();
 
-  return false;
+	return false;
 }
 
 sRGB GetRGBFromImage(const Image& img, const int x, const int y, const bool grayscale) {
-  const size_t index = img.GetIndex(x, y);
+	const size_t index = img.GetIndex(x, y);
 
-  if (img.GetChannels() == 1 || img.GetChannels() == 2) {
-    const double v = sRGB::UInt8ToDouble(img.GetData(index));
-    return sRGB(v, v, v);
-  }
-  else {
-    const double r = sRGB::UInt8ToDouble(img.GetData(index + 0));
-    const double g = sRGB::UInt8ToDouble(img.GetData(index + 1));
-    const double b = sRGB::UInt8ToDouble(img.GetData(index + 2));
+	if (img.GetChannels() == 1 || img.GetChannels() == 2) {
+		const double v = sRGB::UInt8ToDouble(img.GetData(index));
+		return sRGB(v, v, v);
+	} else {
+		const double r = sRGB::UInt8ToDouble(img.GetData(index + 0));
+		const double g = sRGB::UInt8ToDouble(img.GetData(index + 1));
+		const double b = sRGB::UInt8ToDouble(img.GetData(index + 2));
 
-    if (grayscale) {
-      const OkLab lab = OkLab::sRGBtoOkLab(sRGB(r, g, b)) * OkLab(1., 0., 0.);
-      return OkLab::OkLabtosRGB(lab);
-    }
-    else {
-      return sRGB(r, g, b);
-    }
-  }
+		if (grayscale) {
+			const OkLab lab = OkLab::sRGBtoOkLab(sRGB(r, g, b)) * OkLab(1., 0., 0.);
+			return OkLab::OkLabtosRGB(lab);
+		} else {
+			return sRGB(r, g, b);
+		}
+	}
 }
 
 void SetDataFromRGB(Image& img, const int x, const int y, const sRGB& srgb) {
-  const size_t index = img.GetIndex(x, y);
-  if (img.GetChannels() == 1 || img.GetChannels() == 2) {
-    const OkLab lab = OkLab::sRGBtoOkLab(srgb) * OkLab(1., 0., 0.);
-    const sRGB gray = OkLab::OkLabtosRGB(lab);
+	const size_t index = img.GetIndex(x, y);
+	if (img.GetChannels() == 1 || img.GetChannels() == 2) {
+		const OkLab lab = OkLab::sRGBtoOkLab(srgb) * OkLab(1., 0., 0.);
+		const sRGB gray = OkLab::OkLabtosRGB(lab);
 
-    const uint8_t v = gray.GetRUInt();
+		const uint8_t v = gray.GetRUInt();
 
-    img.SetData(index, v);
-  }
-  else {
-    const uint8_t r = srgb.GetRUInt();
-    const uint8_t g = srgb.GetGUInt();
-    const uint8_t b = srgb.GetBUInt();
+		img.SetData(index, v);
+	} else {
+		const uint8_t r = srgb.GetRUInt();
+		const uint8_t g = srgb.GetGUInt();
+		const uint8_t b = srgb.GetBUInt();
 
-    img.SetData(index + 0, r);
-    img.SetData(index + 1, g);
-    img.SetData(index + 2, b);
-  }
+		img.SetData(index + 0, r);
+		img.SetData(index + 1, g);
+		img.SetData(index + 2, b);
+	}
 }
 
 size_t GetIndex(const int x, const int y, const int width, const int channels) {
-  // size_t((x + y * m_w) * m_channels)
-  return size_t((x + y * width) * channels);
+	// size_t((x + y * m_w) * m_channels)
+	return size_t((x + y * width) * channels);
+}
+
+std::string GetFileExtension(const std::string loc) {
+	std::stringstream locStream(loc);
+	std::string locSeg;
+	std::vector<std::string> locSegList;
+
+	while (std::getline(locStream, locSeg, '.')) locSegList.push_back(locSeg);
+
+	return locSegList.back();
+}
+
+std::string GetFileNoExtension(const std::string loc) {
+	std::stringstream locStream(loc);
+	std::string locSeg;
+	std::vector<std::string> locSegList;
+
+	while (std::getline(locStream, locSeg, '.')) locSegList.push_back(locSeg);
+
+	std::string out = "";
+	for (size_t i = 0; i < locSegList.size() - 1; i++) {
+		if (i != 0) out += ".";
+		out += locSegList[i];
+	}
+
+	return out;
 }
