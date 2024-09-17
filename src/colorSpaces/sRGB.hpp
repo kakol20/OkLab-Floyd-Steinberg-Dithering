@@ -102,7 +102,37 @@ inline std::string sRGB::Debug(const double maxValue) const {
 }
 
 inline std::string sRGB::UintDebug() const {
-	return std::to_string((*this).GetRUInt()) + ' ' + std::to_string((*this).GetGUInt()) + ' ' + std::to_string((*this).GetBUInt());
+	//std::string out = std::to_string((*this).GetRUInt());
+	//return std::to_string((*this).GetRUInt()) + ' ' + std::to_string((*this).GetGUInt()) + ' ' + std::to_string((*this).GetBUInt());
+
+	std::string out;
+	if (this->GetRUInt() <= 9) {
+		out += "  " + std::to_string(this->GetRUInt());
+	} else if (this->GetRUInt() <= 99) {
+		out += " " + std::to_string(this->GetRUInt());
+	} else {
+		out += std::to_string(this->GetRUInt());
+	}
+	out += " ";
+
+	if (this->GetGUInt() <= 9) {
+		out += "  " + std::to_string(this->GetGUInt());
+	} else if (this->GetGUInt() <= 99) {
+		out += " " + std::to_string(this->GetGUInt());
+	} else {
+		out += std::to_string(this->GetGUInt());
+	}
+	out += " ";
+
+	if (this->GetBUInt() <= 9) {
+		out += "  " + std::to_string(this->GetBUInt());
+	} else if (this->GetBUInt() <= 99) {
+		out += " " + std::to_string(this->GetBUInt());
+	} else {
+		out += std::to_string(this->GetBUInt());
+	}
+
+	return out;
 }
 
 inline sRGB sRGB::HexTosRGB(const std::string hex) {

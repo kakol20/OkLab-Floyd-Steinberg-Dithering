@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
 	std::string paletteLoc;
 	bool havePalette = false;
 
-	// get files
+	// ----- GET FILES -----
 	for (int i = 1; i < argc; i++) {
 		std::string fileExtension = GetFileExtension(argv[i]);
 
@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	// check if have all files
+	// ----- CHECK IF HAVE ALL FILES -----
 	if (!(haveImg && haveJson && havePalette)) {
 		if (!haveImg) Log::WriteOneLine("Image file not found");
 		if (!haveJson) Log::WriteOneLine("JSON file not found");
@@ -56,6 +56,25 @@ int main(int argc, char* argv[]) {
 	Log::WriteOneLine("Image: " + imgLoc);
 	Log::WriteOneLine("JSON: " + jsonLoc);
 	Log::WriteOneLine("Palette: " + paletteLoc);
+	Log::EndLine();
+
+	// ----- READ FILES -----
+
+	Image inputImg;
+	if (!inputImg.Read(imgLoc.c_str())) {
+		Log::Save();
+		std::cout << "\nPress enter to exit...\n";
+		std::cin.ignore();
+		return 0;
+	}
+
+	std::vector<sRGB> palette;
+	if (!GetPalette(paletteLoc, palette)) {
+		Log::Save();
+		std::cout << "\nPress enter to exit...\n";
+		std::cin.ignore();
+		return 0;
+	}
 
 	Log::Save();
 	return 0;
@@ -112,24 +131,32 @@ bool GetPalette(const std::string& loc, std::vector<sRGB>& out) {
 
 			out.push_back(rgb);
 
-			Log::StartLine();
+			std::string hexOut = "#" + hex;
+			std::string rgbOut = "rgb(" + rgb.UintDebug() + ")";
+			std::string labOut = "oklab(" + lab.Debug() + ")";
+
+			Log::WriteOneLine(hexOut + " - " + rgbOut + " - " + labOut);
+
+			/*Log::StartLine();
 			Log::Write("#");
 			Log::Write(hex);
 			Log::Write(" --- rgb(");
 			Log::Write(rgb.UintDebug());
-			Log::Write(") --- oklab(");
+			Log::Write(")\t\t--- oklab(");
 			Log::Write(lab.Debug());
-			Log::Write(") --- oklch(");
+			Log::Write(")\t--- oklch(");
 			Log::Write(lch.Debug());
 			Log::Write(")");
-			Log::EndLine();
+			Log::EndLine();*/
 		}
+
+		Log::WriteOneLine("Read success: " + loc);
 
 		return true;
 	} else {
 		Log::StartLine();
+		Log::Write("Failed to read: ");
 		Log::Write(loc);
-		Log::Write(" not found");
 		Log::EndLine();
 
 		p.close();
