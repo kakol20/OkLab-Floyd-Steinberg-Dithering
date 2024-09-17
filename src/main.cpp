@@ -69,8 +69,6 @@ int main(int argc, char* argv[]) {
 		std::cin.ignore();
 		return 0;
 	}
-	Log::WriteOneLine("Width: " + std::to_string(inputImg.GetWidth()));
-	Log::WriteOneLine("Height: " + std::to_string(inputImg.GetHeight()));
 
 	std::ifstream f(jsonLoc);
 	if (!(f)) {
@@ -118,6 +116,11 @@ int main(int argc, char* argv[]) {
 
 	// ----- MAIN PROCESS -----
 
+	Log::EndLine();
+
+	Log::WriteOneLine("Width: " + std::to_string(inputImg.GetWidth()));
+	Log::WriteOneLine("Height: " + std::to_string(inputImg.GetHeight()));
+
 	std::vector<OkLab> pixelsLab;
 	pixelsLab.reserve((size_t)(inputImg.GetWidth() * inputImg.GetHeight()));
 
@@ -138,10 +141,18 @@ int main(int argc, char* argv[]) {
 				double progress = double(inputImg.GetIndex(x, y)) / double(inputImg.GetSize());
 				progress *= 100.;
 
+				std::stringstream outStr;
+				outStr << std::fixed << std::setprecision(6);
+
+				if (progress < 10.) {
+					outStr << " ";
+				}
+				outStr << progress;
+
 				Log::EndLine();
 				Log::StartLine();
 				Log::Write("  ");
-				Log::Write(std::to_string(progress));
+				Log::Write(outStr.str());
 				Log::Write("%");
 
 				Log::StartTime();
@@ -198,10 +209,18 @@ int main(int argc, char* argv[]) {
 				double progress = double(inputImg.GetIndex(x, y)) / double(inputImg.GetSize());
 				progress *= 100.;
 
+				std::stringstream outStr;
+				outStr << std::fixed << std::setprecision(6);
+
+				if (progress < 10.) {
+					outStr << " ";
+				}
+				outStr << progress;
+
 				Log::EndLine();
 				Log::StartLine();
 				Log::Write("  ");
-				Log::Write(std::to_string(progress));
+				Log::Write(outStr.str());
 				Log::Write("%");
 
 				Log::StartTime();
