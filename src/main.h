@@ -38,5 +38,6 @@ void SetDataFromRGB(Image& img, const int x, const int y, const sRGB& srgb);
 size_t GetIndex(const int x, const int y, const int width, const int channels = 1);
 
 std::string GetFileExtension(const std::string loc);
+std::string GetFileNoExtension(const std::string loc);
 
 #endif // !MAIN_H

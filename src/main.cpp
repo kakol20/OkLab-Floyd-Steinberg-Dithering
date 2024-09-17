@@ -26,6 +26,7 @@ int main(int argc, char* argv[]) {
 	bool havePalette = false;
 
 	// ----- GET FILES -----
+
 	for (int i = 1; i < argc; i++) {
 		std::string fileExtension = GetFileExtension(argv[i]);
 
@@ -42,6 +43,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	// ----- CHECK IF HAVE ALL FILES -----
+
 	if (!(haveImg && haveJson && havePalette)) {
 		if (!haveImg) Log::WriteOneLine("Image file not found");
 		if (!haveJson) Log::WriteOneLine("JSON file not found");
@@ -67,6 +69,8 @@ int main(int argc, char* argv[]) {
 		std::cin.ignore();
 		return 0;
 	}
+	Log::WriteOneLine("Width: " + std::to_string(inputImg.GetWidth()));
+	Log::WriteOneLine("Height: " + std::to_string(inputImg.GetHeight()));
 
 	std::ifstream f(jsonLoc);
 	if (!(f)) {
@@ -111,6 +115,104 @@ int main(int argc, char* argv[]) {
 		std::cin.ignore();
 		return 0;
 	}
+
+	// ----- MAIN PROCESS -----
+
+	std::vector<OkLab> pixelsLab;
+	pixelsLab.reserve((size_t)(inputImg.GetWidth() * inputImg.GetHeight()));
+
+	// -- Copy Pixels into vector of OkLab --
+
+	Log::StartLine();
+	Log::Write("Copying pixels...");
+
+	Log::StartTime();
+	for (int y = 0; y < inputImg.GetHeight(); y++) {
+		for (int x = 0; x < inputImg.GetWidth(); x++) {
+			const sRGB pixelCol = GetRGBFromImage(inputImg, x, y);
+			const OkLab mult = OkLab(1., grayscale ? 0. : 1., grayscale ? 0. : 1.);
+			pixelsLab.push_back(OkLab::sRGBtoOkLab(pixelCol) * mult);
+
+			// -- Check Time --
+			if (Log::CheckTimeSeconds(5.)) {
+				double progress = double(inputImg.GetIndex(x, y)) / double(inputImg.GetSize());
+				progress *= 100.;
+
+				Log::EndLine();
+				Log::StartLine();
+				Log::Write("  ");
+				Log::Write(std::to_string(progress));
+				Log::Write("%");
+
+				Log::StartTime();
+			}
+		}
+	}
+	Log::EndLine();
+	Log::EndLine();
+
+	// -- Start --
+
+	Log::StartLine();
+	Log::Write("Processing...");
+
+	Log::StartTime();
+	for (int y = 0; y < inputImg.GetHeight(); y++) {
+		for (int x = 0; x < inputImg.GetWidth(); x++) {
+			const size_t labI = GetIndex(x, y, inputImg.GetWidth());
+
+			const OkLab oldPixelLab = pixelsLab[labI];
+			const OkLab newPixelLab = ClosestPaletteColorLab(palette, oldPixelLab, dist_lightness);
+
+			// -- Set New Pixel Colour --
+
+			const sRGB newPixelRGB = OkLab::OkLabtosRGB(newPixelLab);
+			SetDataFromRGB(inputImg, x, y, newPixelRGB);
+			pixelsLab[labI] = newPixelLab;
+
+			// -- Dither --
+
+			if (dither) {
+				const OkLab quant_error = oldPixelLab - newPixelLab;
+
+				if (x + 1 < inputImg.GetWidth()) {
+					pixelsLab[GetIndex(x + 1, y, inputImg.GetWidth())] += quant_error * (7. / 16.);
+				}
+
+				if (y + 1 < inputImg.GetHeight()) {
+					if (x - 1 >= 0) {
+						pixelsLab[GetIndex(x - 1, y, inputImg.GetWidth())] += quant_error * (3. / 16.);
+					}
+
+					pixelsLab[GetIndex(x, y + 1, inputImg.GetWidth())] += quant_error * (5. / 16.);
+
+					if (x + 1 < inputImg.GetWidth()) {
+						pixelsLab[GetIndex(x + 1, y + 1, inputImg.GetWidth())] += quant_error * (1. / 16.);
+					}
+				}
+			}
+
+			// -- Check Time --
+
+			if (Log::CheckTimeSeconds(5.)) {
+				double progress = double(inputImg.GetIndex(x, y)) / double(inputImg.GetSize());
+				progress *= 100.;
+
+				Log::EndLine();
+				Log::StartLine();
+				Log::Write("  ");
+				Log::Write(std::to_string(progress));
+				Log::Write("%");
+
+				Log::StartTime();
+			}
+		}
+	}
+	Log::EndLine();
+	Log::EndLine();
+
+	const std::string outLoc = GetFileNoExtension(imgLoc) + "_dithered.png";
+	inputImg.Write(outLoc.c_str());
 
 	Log::Save();
 	return 0;
@@ -285,4 +387,20 @@ std::string GetFileExtension(const std::string loc) {
 	while (std::getline(locStream, locSeg, '.')) locSegList.push_back(locSeg);
 
 	return locSegList.back();
+}
+
+std::string GetFileNoExtension(const std::string loc) {
+	std::stringstream locStream(loc);
+	std::string locSeg;
+	std::vector<std::string> locSegList;
+
+	while (std::getline(locStream, locSeg, '.')) locSegList.push_back(locSeg);
+
+	std::string out = "";
+	for (size_t i = 0; i < locSegList.size() - 1; i++) {
+		if (i != 0) out += ".";
+		out += locSegList[i];
+	}
+
+	return out;
 }
