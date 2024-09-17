@@ -68,6 +68,42 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 
+	std::ifstream f(jsonLoc);
+	if (!(f)) {
+		Log::WriteOneLine("Read failed: " + jsonLoc);
+		Log::Save();
+		std::cout << "\nPress enter to exit...\n";
+		std::cin.ignore();
+		return 0;
+	}
+	Log::EndLine();
+
+	json settings = json::parse(f);
+
+	const bool haveDither = settings.contains("dither");
+	const bool haveGrayscale = settings.contains("grayscale");
+	const bool haveDist_lightness = settings.contains("dist_lightness");
+
+	if (!(haveDither && haveGrayscale && haveDist_lightness)) {
+		if (!haveDither) Log::WriteOneLine("JSON setting not found: dither");
+		if (!haveGrayscale) Log::WriteOneLine("JSON setting not found: grayscale");
+		if (!haveDist_lightness) Log::WriteOneLine("JSON setting not found: dist_lightness");
+
+		Log::Save();
+		std::cout << "\nPress enter to exit...\n";
+		std::cin.ignore();
+		return 0;
+	}
+
+	const bool dither = settings["dither"];
+	const bool grayscale = settings["grayscale"];
+	const bool dist_lightness = settings["dist_lightness"];
+
+	Log::WriteOneLine("Dither: " + (std::string)(dither ? "TRUE" : "FALSE"));
+	Log::WriteOneLine("Process As Grayscale: " + (std::string)(grayscale ? "TRUE" : "FALSE"));
+	Log::WriteOneLine("Use Lightness As Distance: " + (std::string)(dist_lightness ? "TRUE" : "FALSE"));
+	//Log::EndLine();
+
 	std::vector<sRGB> palette;
 	if (!GetPalette(paletteLoc, palette)) {
 		Log::Save();
@@ -144,7 +180,7 @@ bool GetPalette(const std::string& loc, std::vector<sRGB>& out) {
 		return true;
 	} else {
 		Log::StartLine();
-		Log::Write("Failed to read: ");
+		Log::Write("Read failed: ");
 		Log::Write(loc);
 		Log::EndLine();
 
