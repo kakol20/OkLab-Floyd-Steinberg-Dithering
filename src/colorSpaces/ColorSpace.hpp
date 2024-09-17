@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <sstream>
+#include <iomanip>
 
 class ColorSpace {
 public:
@@ -25,7 +27,19 @@ public:
 	}
 
 	virtual std::string Debug() const {
-		return std::to_string(m_a) + ' ' + std::to_string(m_b) + ' ' + std::to_string(m_c);
+		std::stringstream out;
+		out << std::fixed << std::setprecision(4);
+
+		//if (std::to_string(m_a)[0] != '-') out << ' ';
+		out << m_a << ' ';
+
+		if (std::to_string(m_b)[0] != '-') out << ' ';
+		out << m_b << ' ';
+
+		if (std::to_string(m_c)[0] != '-') out << ' ';
+		out << m_c;
+		//return std::to_string(m_a) + ' ' + std::to_string(m_b) + ' ' + std::to_string(m_c);
+		return out.str();
 	}
 
 	ColorSpace& operator/=(const ColorSpace& other);

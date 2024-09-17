@@ -130,9 +130,31 @@ OkLab OkLCh::OkLChtoOkLab(const OkLCh& oklch) {
 
 std::string OkLCh::Debug(const bool inDegrees) const {
 	if (inDegrees) {
-		return std::to_string(m_a) + ' ' + std::to_string(m_b) + ' ' + std::to_string(m_c * Maths::RadToDeg);
+		//return std::to_string(m_a) + ' ' + std::to_string(m_b) + ' ' + std::to_string(m_c * Maths::RadToDeg);
+
+		std::stringstream out;
+		out << std::fixed << std::setprecision(4);
+
+		out << m_a << ' ';
+		out << m_b << ' ';
+
+		if (m_c * Maths::RadToDeg < 10.) {
+			out << "  ";
+		} else if (m_c * Maths::RadToDeg < 100.) {
+			out << " ";
+		}
+		out << (m_c * Maths::RadToDeg);
+		return out.str();
 	} else {
-		return std::to_string(m_a) + ' ' + std::to_string(m_b) + ' ' + std::to_string(m_c);
+		//return std::to_string(m_a) + ' ' + std::to_string(m_b) + ' ' + std::to_string(m_c);
+
+		std::stringstream out;
+		out << std::fixed << std::setprecision(4);
+
+		out << m_a << ' ';
+		out << m_b << ' ';
+		out << m_c;
+		return out.str();
 	}
 }
 

@@ -134,20 +134,9 @@ bool GetPalette(const std::string& loc, std::vector<sRGB>& out) {
 			std::string hexOut = "#" + hex;
 			std::string rgbOut = "rgb(" + rgb.UintDebug() + ")";
 			std::string labOut = "oklab(" + lab.Debug() + ")";
+			std::string lchOut = "oklch(" + lch.Debug() + ")";
 
-			Log::WriteOneLine(hexOut + " - " + rgbOut + " - " + labOut);
-
-			/*Log::StartLine();
-			Log::Write("#");
-			Log::Write(hex);
-			Log::Write(" --- rgb(");
-			Log::Write(rgb.UintDebug());
-			Log::Write(")\t\t--- oklab(");
-			Log::Write(lab.Debug());
-			Log::Write(")\t--- oklch(");
-			Log::Write(lch.Debug());
-			Log::Write(")");
-			Log::EndLine();*/
+			Log::WriteOneLine(hexOut + " - " + rgbOut + " - " + labOut + " - " + lchOut);
 		}
 
 		Log::WriteOneLine("Read success: " + loc);
