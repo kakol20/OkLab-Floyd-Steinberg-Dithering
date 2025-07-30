@@ -230,7 +230,7 @@ int main(int argc, char* argv[]) {
 	Log::EndLine();
 	Log::EndLine();
 
-	const std::string outLoc = GetFileNoExtension(imgLoc) + "_dithered.png";
+	const std::string outLoc = GetFileNoExtension(imgLoc) + (dither ? "_dithered.png" : "_noDither.png");
 	inputImg.Write(outLoc.c_str());
 
 	Log::Save();
