@@ -1,6 +1,8 @@
 # OkLab Floyd-Steinberg Dithering
 Use OkLab for closest palette colour search
 
+Project moved to new [repo](https://github.com/kakol20/OkLab-Dithering).
+
 ## JSON
 Comments in settings.json not supported
 
