@@ -82,28 +82,25 @@ int main(int argc, char* argv[]) {
 
 	json settings = json::parse(f);
 
-	const bool haveDither = settings.contains("dither");
-	const bool haveGrayscale = settings.contains("grayscale");
-	const bool haveDist_lightness = settings.contains("dist_lightness");
+	std::array<std::string, 3> required = {
+		"dither",
+		"grayscale",
+		"dist_lightness"
+	};
 
-	if (!(haveDither && haveGrayscale && haveDist_lightness)) {
-		if (!haveDither) Log::WriteOneLine("JSON setting not found: dither");
-		if (!haveGrayscale) Log::WriteOneLine("JSON setting not found: grayscale");
-		if (!haveDist_lightness) Log::WriteOneLine("JSON setting not found: dist_lightness");
-
-		Log::Save();
-		std::cout << "\nPress enter to exit...\n";
-		std::cin.ignore();
-		return 0;
+	bool allFound = true;
+	for (const auto& key : required) {
+		if (!settings.contains(key)) {
+			Log::WriteOneLine("JSON setting not found: " + key);
+			allFound = false;
+		}
 	}
 
-	const bool dither = settings["dither"];
-	const bool grayscale = settings["grayscale"];
-	const bool dist_lightness = settings["dist_lightness"];
+	if (!allFound) return -1;
 
-	Log::WriteOneLine("Dither: " + (std::string)(dither ? "TRUE" : "FALSE"));
-	Log::WriteOneLine("Process As Grayscale: " + (std::string)(grayscale ? "TRUE" : "FALSE"));
-	Log::WriteOneLine("Use Lightness As Distance: " + (std::string)(dist_lightness ? "TRUE" : "FALSE"));
+	Log::WriteOneLine("Dither: " + (std::string)(settings["dither"] ? "TRUE" : "FALSE"));
+	Log::WriteOneLine("Process As Grayscale: " + (std::string)(settings["grayscale"] ? "TRUE" : "FALSE"));
+	Log::WriteOneLine("Use Lightness As Distance: " + (std::string)(settings["dist_lightness"] ? "TRUE" : "FALSE"));
 	//Log::EndLine();
 
 	std::vector<sRGB> palette;
@@ -133,7 +130,7 @@ int main(int argc, char* argv[]) {
 	for (int y = 0; y < inputImg.GetHeight(); y++) {
 		for (int x = 0; x < inputImg.GetWidth(); x++) {
 			const sRGB pixelCol = GetRGBFromImage(inputImg, x, y);
-			const OkLab mult = OkLab(1., grayscale ? 0. : 1., grayscale ? 0. : 1.);
+			const OkLab mult = OkLab(1., settings["grayscale"] ? 0. : 1., settings["grayscale"] ? 0. : 1.);
 			pixelsLab.push_back(OkLab::sRGBtoOkLab(pixelCol) * mult);
 
 			// -- Check Time --
@@ -173,7 +170,7 @@ int main(int argc, char* argv[]) {
 			const size_t labI = GetIndex(x, y, inputImg.GetWidth());
 
 			const OkLab oldPixelLab = pixelsLab[labI];
-			const OkLab newPixelLab = ClosestPaletteColorLab(palette, oldPixelLab, dist_lightness);
+			const OkLab newPixelLab = ClosestPaletteColorLab(palette, oldPixelLab, settings["dist_lightness"]);
 
 			// -- Set New Pixel Colour --
 
@@ -183,7 +180,7 @@ int main(int argc, char* argv[]) {
 
 			// -- Dither --
 
-			if (dither) {
+			if (settings["dither"]) {
 				const OkLab quant_error = oldPixelLab - newPixelLab;
 
 				if (x + 1 < inputImg.GetWidth()) {
@@ -230,7 +227,7 @@ int main(int argc, char* argv[]) {
 	Log::EndLine();
 	Log::EndLine();
 
-	const std::string outLoc = GetFileNoExtension(imgLoc) + (dither ? "_dithered.png" : "_noDither.png");
+	const std::string outLoc = GetFileNoExtension(imgLoc) + (settings["dither"] ? "_dithered.png" : "_noDither.png");
 	inputImg.Write(outLoc.c_str());
 
 	Log::Save();
